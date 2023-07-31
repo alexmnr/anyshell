@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  db:
+    image: mariadb
+    container_name: anyshell-db
+    restart: always
+    ports:
+      - '<dbPort>:3306'
+    volumes:
+      - /opt/anyshell-server/db-config:/etc/mysql/conf.d
+      - /opt/anyshell-server/db-data:/var/lib/mysql
+      - /opt/anyshell-server/sql:/opt/sql
+    environment:
+      MYSQL_ROOT_PASSWORD: <rootPassword>
+      TZ: Europe/Berlin
+
+  ssh:
+    container_name: anyshell-ssh
+    restart: always
+    ports:
+      - '<sshPort>:22'
+    build: 
+      context: ./ssh
+      args:
+        password: <userPassword>
