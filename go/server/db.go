@@ -31,3 +31,16 @@ func CheckDbInfo(dbInfo tui.DbInfo) {
   }
 }
 
+func ConfigureDb(serverInfo tui.ServerInfo) {
+  // configuring databasse
+  query := "/bin/mariadb -u root -p" + serverInfo.RootPassword + " -e 'CREATE DATABASE IF NOT EXISTS " + serverInfo.Name + "'"
+  command.SmartCmd("docker exec anyshell-db " + query)
+  query = "/bin/mariadb -u root -p" + serverInfo.RootPassword + " -e \"CREATE USER IF NOT EXISTS " + serverInfo.Name + "@localhost IDENTIFIED BY '" + serverInfo.UserPassword + "';\""
+  command.SmartCmd("docker exec anyshell-db " + query)
+  query = "/bin/mariadb -u root -p" + serverInfo.RootPassword + " -e \"CREATE USER IF NOT EXISTS " + serverInfo.Name + "@'%' IDENTIFIED BY '" + serverInfo.UserPassword + "';\""
+  command.SmartCmd("docker exec anyshell-db " + query)
+  query = "/bin/mariadb -u root --database=" + serverInfo.Name + " -p" + serverInfo.RootPassword + " -e \"source /opt/sql/template.sql;\""
+  command.SmartCmd("docker exec anyshell-db " + query)
+  query = "/bin/mariadb -u root -p" + serverInfo.RootPassword + " -e \"GRANT ALL PRIVILEGES ON " + serverInfo.Name + ".* TO " + serverInfo.Name + "@'%';\""
+  command.SmartCmd("docker exec anyshell-db " + query)
+}
