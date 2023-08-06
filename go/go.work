@@ -4,8 +4,10 @@ use (
 	.
 	./command
 	./config
+	./db
 	./out
 	./server
+	./ssh
 	./tools
 	./tui
 )

@@ -1,29 +1,45 @@
 package main
 
 import (
+	"command"
 	"config"
+	"db"
 	"out"
+	"server"
+	"tools"
 	"tui"
-  "server"
-  "tools"
-  "command"
 
-	"strings"
 	"os"
+  "fmt"
+	"strings"
 )
 var message string
 var options []string
 var ret string
+var verbose bool
 var clientConfig config.ClientConfig
 
 func main() {
   ///////// Config /////////
   check := config.ClientConfigCheck()
-
+  verbose = false
+  //////// Arguments ///////
+  if check == true {
+    args := os.Args
+    for _, arg := range args {
+      if arg == "-v" {
+        verbose = true
+      } else if arg == "list" {
+        ret = "List"
+      }
+    }
+  }
+  
   ///////// Menu /////////
   if check == false {
     options = append(options, out.Style("Client", 4, false) + " configuration")
   } else {
+    options = append(options, out.Style("List", 2, false) + " hosts")
     options = append(options, out.Style("Client", 5, false) + " configuration")
     // load config
     clientConfig = config.GetClientConfig()
@@ -32,12 +48,23 @@ func main() {
   options = append(options, out.Style("Exit", 0, false))
   message = "Welcome to anyshell!"
 
-  ret = tui.Survey(message, options)
+  if len(ret) == 0 {
+    ret = tui.Survey(message, options)
+  }
   
   // Exit 
   if strings.Contains(ret, "Exit") {
     out.Info("Bye!")
     os.Exit(0)
+  // list
+  } else if strings.Contains(ret, "List") {
+    conn := db.Connect(clientConfig.ConnectionConfigs[0])
+    hosts := db.GetHosts(conn)
+    hostInfoConfig := db.GetHostInfoConfig(hosts, verbose)
+    fmt.Println(db.GetHostInfoDescription(hostInfoConfig))
+    for _, host := range hosts {
+      fmt.Println(db.GetHostInfoString(host, hostInfoConfig))
+    }
   // Server Config 
   } else if strings.Contains(ret, "Server") {
     server.Menu()
