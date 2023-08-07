@@ -5,6 +5,7 @@ use (
 	./command
 	./config
 	./db
+	./host
 	./out
 	./server
 	./ssh

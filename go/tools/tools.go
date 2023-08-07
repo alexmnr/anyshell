@@ -87,3 +87,8 @@ func GetCPU() string {
   }
   return cpu
 }
+
+func GetHostName() string {
+  name, _ := os.Hostname()
+  return name
+}

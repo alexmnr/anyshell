@@ -8,6 +8,7 @@ import (
 	"server"
 	"tools"
 	"tui"
+	"host"
 
 	"os"
   "fmt"
@@ -20,6 +21,10 @@ var verbose bool
 var clientConfig config.ClientConfig
 
 func main() {
+  clientConfig = config.GetClientConfig()
+  conn := db.Connect(clientConfig.ConnectionConfigs[0])
+  host.Setup(conn, clientConfig)
+  os.Exit(0)
   ///////// Config /////////
   check := config.ClientConfigCheck()
   verbose = false
