@@ -5,6 +5,7 @@ import (
 	"tools"
 	"tui"
   "command"
+  "types"
 
 	"os"
   "time"
@@ -91,7 +92,7 @@ func Menu(){
     // check if info correct
     CheckDbInfo(dbInfo)
     // create db
-    nfo := tui.ServerInfo{
+    nfo := types.ServerInfo{
       Name: dbInfo.Name,
       RootPassword: dbInfo.RootPassword,
     }
@@ -138,7 +139,7 @@ func CheckDependencies() {
   }
 }
 
-func CreateDirectory(serverInfo tui.ServerInfo) {
+func CreateDirectory(serverInfo types.ServerInfo) {
   // create dir
   command.SmartCmd("sudo mkdir /opt/anyshell-server")
   // copy configs
@@ -166,7 +167,7 @@ func CreateDirectory(serverInfo tui.ServerInfo) {
   command.SmartCmd("sudo chown " + user + ":" + user + " /opt/anyshell-server -R")
 }
 
-func FillDockerCompose(serverInfo tui.ServerInfo) {
+func FillDockerCompose(serverInfo types.ServerInfo) {
   // fill docker-compose.yml with data
   dir := "/opt/anyshell-server/"
   path := dir + "docker/docker-compose.yml"

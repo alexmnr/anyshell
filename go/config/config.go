@@ -5,15 +5,13 @@ import (
 	"tools"
   "out"
   "tui"
+  "types"
 
   "os"
   "fmt"
 	"gopkg.in/yaml.v2"
 )
 
-type ClientConfig struct {
-  ConnectionConfigs []tui.ConnectionInfo
-}
 
 
 func ClientConfigCheck() bool {
@@ -36,11 +34,11 @@ func CreateClientConfig() {
   configDir := homeDir + "/.config/anyshell"
   command.Mkdir(configDir, false)
 
-  var connectionConfigs []tui.ConnectionInfo
+  var connectionConfigs []types.ConnectionInfo
   connectionConfig := tui.GetConnectionInfo()
   connectionConfigs = append(connectionConfigs, connectionConfig)
 
-  clientConfig := ClientConfig{
+  clientConfig := types.ClientConfig{
     ConnectionConfigs: connectionConfigs,
   }
   yamlData, err := yaml.Marshal(&clientConfig)
@@ -77,11 +75,11 @@ func AddConnectionConfig() {
   }
 }
 
-func GetClientConfig() ClientConfig {
+func GetClientConfig() types.ClientConfig {
   homeDir := tools.GetHomeDir()
   configDir := homeDir + "/.config/anyshell"
   yamlFile, _ := os.ReadFile(configDir + "/client-config.yml")
-  clientConfig := ClientConfig{}
+  clientConfig := types.ClientConfig{}
   if err := yaml.Unmarshal(yamlFile, &clientConfig); err != nil {
     fmt.Printf(out.Style("Error while reading config: ", 0, false) + "%v \n", err)
     os.Exit(1)

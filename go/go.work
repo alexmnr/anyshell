@@ -11,4 +11,5 @@ use (
 	./ssh
 	./tools
 	./tui
+	./types
 )

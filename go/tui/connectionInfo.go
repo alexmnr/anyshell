@@ -2,6 +2,7 @@ package tui
 
 import (
   "out"
+  "types"
 
 	"fmt"
 	"strings"
@@ -12,14 +13,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-type ConnectionInfo struct {
-  Name string
-  Host string
-  SshPort string
-  DbPort string
-  Password string
-}
 
 type ConnectionInfoModel struct {
 	focusIndex int
@@ -153,9 +146,9 @@ func (m ConnectionInfoModel) View() string {
 	return b.String()
 }
 
-func GetConnectionInfo() ConnectionInfo {
+func GetConnectionInfo() types.ConnectionInfo {
   // create struct
-  info := ConnectionInfo{}
+  info := types.ConnectionInfo{}
   // get input
   m := initConnectionInfoModel()
   tm, _ := tea.NewProgram(&m).Run()

@@ -2,6 +2,7 @@ package db
 
 import (
 	"out"
+  "types"
 
 	"database/sql"
   "time"
@@ -10,7 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetHosts(db *sql.DB) []HostInfo {
+func GetHosts(db *sql.DB) []types.HostInfo {
   query := "SELECT * FROM hosts ORDER BY `ID` ASC;"
   rows, err := db.Query(query)
   if err != nil {
@@ -18,21 +19,22 @@ func GetHosts(db *sql.DB) []HostInfo {
   }
   defer rows.Close()
 
-  var hosts []HostInfo
+  var hosts []types.HostInfo
 
   for rows.Next() {
-    var host HostInfo
-    err := rows.Scan(&host.ID, &host.Name, &host.User, &host.Port, &host.Online, &host.PublicIP, &host.LocalIP, &host.LastOnline, &host.Version)
+    var host types.HostInfo
+    err := rows.Scan(&host.ID, &host.Name, &host.User, &host.Port, &host.PublicIP, &host.LocalIP, &host.Online, &host.LastOnline, &host.Version)
+    if err != nil {
+      QueryError(query, fmt.Sprint(err))
+      os.Exit(1)
+    }
     t, err := time.Parse("2006-01-02 15:04:05", host.LastOnline)
     if err != nil {
       out.Error(err)
       os.Exit(0)
     }
-    host.LastOnline = TimeDiffString(time.Now(), t)
-    if err != nil {
-      QueryError(query, fmt.Sprint(err))
-      os.Exit(1)
-    }
+    now := time.Now().UTC()
+    host.LastOnline = TimeDiffString(now, t)
     hosts = append(hosts, host)
   }
   return hosts

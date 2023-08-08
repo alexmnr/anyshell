@@ -13,7 +13,6 @@ services:
       - /opt/anyshell-server/sql:/opt/sql
     environment:
       MYSQL_ROOT_PASSWORD: <rootPassword>
-      TZ: Europe/Berlin
 
   ssh:
     container_name: anyshell-ssh

@@ -4,7 +4,6 @@ import (
   "tools"
   "command"
 
-	"fmt"
 	"os"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -110,8 +109,7 @@ func RunAction(name string, cmd func() error, debug bool) {
   }()
   // start manager
 	if _, err := p.Run(); err != nil {
-		fmt.Println("Error running package_manager:", err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 }
 

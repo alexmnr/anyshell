@@ -1,6 +1,8 @@
 package db
 
 import (
+  "types"
+
   "fmt"
   "github.com/charmbracelet/lipgloss"
 )
@@ -16,7 +18,7 @@ type HostInfoConfig struct {
   LastOnlineLength int
 }
 
-func GetHostInfoConfig(hosts []HostInfo, verbose bool) HostInfoConfig {
+func GetHostInfoConfig(hosts []types.HostInfo, verbose bool) HostInfoConfig {
   config := HostInfoConfig{
     Verbose: verbose,
     IDLength: 2,
@@ -70,7 +72,7 @@ func GetHostInfoDescription(config HostInfoConfig) string {
   return string
 }
 
-func GetHostInfoString(host HostInfo, config HostInfoConfig) string {
+func GetHostInfoString(host types.HostInfo, config HostInfoConfig) string {
   var string string
   if config.Verbose == true {
     des := " %-" + str(config.IDLength) + "s | %-" + str(config.NameLength) + "s | %-" + str(config.UserLength) + "s | %-" + str(config.PortLength) + "s | %-" + str(config.LastOnlineLength) + "s | %-" + str(config.LocalIPLength) + "s | %-" + str(config.PublicIPLength) + "s | %s "

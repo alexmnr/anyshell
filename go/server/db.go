@@ -4,6 +4,7 @@ import (
   "tui"
   "command"
   "out"
+  "types"
 
   "os"
   "strings"
@@ -31,7 +32,7 @@ func CheckDbInfo(dbInfo tui.DbInfo) {
   }
 }
 
-func ConfigureDb(serverInfo tui.ServerInfo) {
+func ConfigureDb(serverInfo types.ServerInfo) {
   // configuring databasse
   query := "/bin/mariadb -u root -p" + serverInfo.RootPassword + " -e 'CREATE DATABASE IF NOT EXISTS " + serverInfo.Name + "'"
   command.SmartCmd("docker exec anyshell-db " + query)

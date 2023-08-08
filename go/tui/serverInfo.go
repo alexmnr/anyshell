@@ -2,6 +2,7 @@ package tui
 
 import (
   "out"
+  "types"
 
 	"fmt"
 	"strings"
@@ -13,16 +14,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-type ServerInfo struct {
-  Name string
-  DbPort string
-  SshPort string
-  WebPort string
-  UserPassword string
-  RootPassword string
-  WebInterface bool
-}
 
 var (
 	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
@@ -170,9 +161,9 @@ func (m serverInfoModel) View() string {
 	return b.String()
 }
 
-func GetServerInfo() ServerInfo {
+func GetServerInfo() types.ServerInfo {
   // create struct
-  info := ServerInfo{}
+  info := types.ServerInfo{}
   // get input
   m := initServerInfoModel()
   tm, _ := tea.NewProgram(&m).Run()

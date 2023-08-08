@@ -8,7 +8,8 @@ import (
 	"server"
 	"tools"
 	"tui"
-	"host"
+  "host"
+  "types"
 
 	"os"
   "fmt"
@@ -18,36 +19,50 @@ var message string
 var options []string
 var ret string
 var verbose bool
-var clientConfig config.ClientConfig
+var clientConfig types.ClientConfig
 
 func main() {
-  clientConfig = config.GetClientConfig()
-  conn := db.Connect(clientConfig.ConnectionConfigs[0])
-  host.Setup(conn, clientConfig)
-  os.Exit(0)
   ///////// Config /////////
   check := config.ClientConfigCheck()
-  verbose = false
-  //////// Arguments ///////
   if check == true {
-    args := os.Args
+    // load config
+    clientConfig = config.GetClientConfig()
+  }
+  verbose = false
+
+  host.Daemon(clientConfig.HostConfigs[0])
+  os.Exit(0)
+  //////// Arguments ///////
+  args := os.Args
+  if check == true {
     for _, arg := range args {
       if arg == "-v" {
         verbose = true
+      } else if arg == "-vv" {
+        verbose = true
       } else if arg == "list" {
         ret = "List"
+      } else if arg == "host" {
+        ret = "Host"
+      } else if arg == "setup" {
+        ret += " setup"
       }
     }
+  } else {
+    if len(args) > 0 {
+      out.Warning("You need to configure client first!")
+    }
   }
-  
   ///////// Menu /////////
   if check == false {
     options = append(options, out.Style("Client", 4, false) + " configuration")
   } else {
     options = append(options, out.Style("List", 2, false) + " hosts")
+    options = append(options, out.Style("Host", 4, false) + " setup")
+    // if host.HostConfigCheck() == true {
+    //   options = append(options, out.Style("Host", 5, false) + " configuration")
+    // }
     options = append(options, out.Style("Client", 5, false) + " configuration")
-    // load config
-    clientConfig = config.GetClientConfig()
   }
   options = append(options, out.Style("Server", 5, false) + " configuration")
   options = append(options, out.Style("Exit", 0, false))
@@ -69,6 +84,13 @@ func main() {
     fmt.Println(db.GetHostInfoDescription(hostInfoConfig))
     for _, host := range hosts {
       fmt.Println(db.GetHostInfoString(host, hostInfoConfig))
+    }
+  // host
+  } else if strings.Contains(ret, "Host") {
+    // host setup
+    if strings.Contains(ret, "setup") {
+      // TODO select server
+      host.Setup(clientConfig.ConnectionConfigs[0])
     }
   // Server Config 
   } else if strings.Contains(ret, "Server") {

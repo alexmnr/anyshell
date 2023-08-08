@@ -2,7 +2,7 @@ package db
 
 import (
 	"out"
-	"tui"
+  "types"
 
 	"database/sql"
 	"fmt"
@@ -10,19 +10,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type HostInfo struct {
-  ID int
-  Name string
-  User string
-  Port int
-  Online bool
-  PublicIP string
-  LocalIP string
-  LastOnline string
-  Version int
-}
 
-func Connect(config tui.ConnectionInfo) *sql.DB {
+func Connect(config types.ConnectionInfo) *sql.DB {
   db, err := sql.Open("mysql", "anyshell:user@tcp(localhost:42998)/anyshell")
 	// defer db.Close()
   if err != nil {
@@ -36,7 +25,7 @@ func Connect(config tui.ConnectionInfo) *sql.DB {
   return db
 }
 
-func ConnectError(error string, config tui.ConnectionInfo) {
+func ConnectError(error string, config types.ConnectionInfo) {
   fmt.Println(out.Style("Can't connect to Database:", 0, false))
   fmt.Println(out.Style("  host: ", 0, false) + config.Host)
   fmt.Println(out.Style("  user: ", 0, false) + config.Name)
