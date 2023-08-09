@@ -8,11 +8,48 @@ import (
   "types"
 
   "os"
+  "strings"
   "fmt"
 	"gopkg.in/yaml.v2"
 )
 
+var message string
+var options []string
+var ret string
 
+func Menu() {
+  check := ClientConfigCheck()
+  if check == false {
+    CreateClientConfig()
+    out.Info("Succesfully created client config!")
+  } else {
+    options = nil
+    options = append(options, out.Style("Add", 4, false) + " another connection")
+    options = append(options, out.Style("Edit", 2, false) + " configuration")
+    options = append(options, out.Style("Remove", 3, false) + " configuration")
+    options = append(options, out.Style("Exit", 0, false))
+    message = "Client Configuration"
+
+    ret = tui.Survey(message, options)
+    if strings.Contains(ret, "Exit") {
+      out.Info("Bye!")
+      os.Exit(0)
+    } else if strings.Contains(ret, "Add") {
+      AddConnectionConfig()
+      out.Info("Succesfully edited client config!")
+    } else if strings.Contains(ret, "Remove") {
+      homeDir := tools.GetHomeDir()
+      configDir := homeDir + "/.config/anyshell"
+      command.Cmd("rm -f " + configDir + "/client-config.yml", false)
+      out.Info("Succesfully removed client config!")
+    } else if strings.Contains(ret, "Edit") {
+      homeDir := tools.GetHomeDir()
+      configDir := homeDir + "/.config/anyshell"
+      tui.Edit(configDir + "/client-config.yml")
+      out.Info("Succesfully edited client config!")
+    }
+  }
+}
 
 func ClientConfigCheck() bool {
   // check if necessary directory exists

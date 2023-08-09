@@ -12,7 +12,8 @@ import (
 
 
 func Connect(config types.ConnectionInfo) *sql.DB {
-  db, err := sql.Open("mysql", "anyshell:user@tcp(localhost:42998)/anyshell")
+  connString := config.Name  + ":" + config.Password + "@tcp(" + config.Host + ":" + config.DbPort + ")/" + config.Name 
+  db, err := sql.Open("mysql", connString)
 	// defer db.Close()
   if err != nil {
     ConnectError(fmt.Sprint(err), config)

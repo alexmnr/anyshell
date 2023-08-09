@@ -1,21 +1,42 @@
 package server
 
 import (
+	"command"
 	"out"
 	"tools"
 	"tui"
-  "command"
-  "types"
+	"types"
 
+	"fmt"
 	"os"
-  "time"
 	"strings"
-  "fmt"
+	"time"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
-var message string
-var options []string
-var input string
+var (
+  message string
+  options []string
+  input string
+  style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+)
+
+// select connection from multiple
+func SelectConnection(clientConfig types.ClientConfig) types.ConnectionInfo {
+  if len(clientConfig.ConnectionConfigs) == 1 {
+    return clientConfig.ConnectionConfigs[0]
+  }
+
+  var options []string
+  for _, server := range clientConfig.ConnectionConfigs {
+    options = append(options, out.Style(server.Name, 1, false) + "@" + out.Style(server.Host, 2, false) + ":" + out.Style(server.SshPort, 3, false) + " db:" + out.Style(server.DbPort, 4, false))
+  }
+
+  index := tui.Select(options, "Select server:")
+
+  return clientConfig.ConnectionConfigs[index]
+}
 
 // main entry point for server config
 func Menu(){

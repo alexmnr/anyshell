@@ -1,12 +1,10 @@
 package main
 
 import (
-	"command"
 	"config"
 	"db"
 	"out"
 	"server"
-	"tools"
 	"tui"
   "host"
   "types"
@@ -29,9 +27,6 @@ func main() {
     clientConfig = config.GetClientConfig()
   }
   verbose = false
-
-  host.Daemon(clientConfig.HostConfigs[0])
-  os.Exit(0)
   //////// Arguments ///////
   args := os.Args
   if check == true {
@@ -57,11 +52,8 @@ func main() {
   if check == false {
     options = append(options, out.Style("Client", 4, false) + " configuration")
   } else {
-    options = append(options, out.Style("List", 2, false) + " hosts")
-    options = append(options, out.Style("Host", 4, false) + " setup")
-    // if host.HostConfigCheck() == true {
-    //   options = append(options, out.Style("Host", 5, false) + " configuration")
-    // }
+    options = append(options, out.Style("List", 2, false) + "")
+    options = append(options, out.Style("Host", 4, false) + " configuration")
     options = append(options, out.Style("Client", 5, false) + " configuration")
   }
   options = append(options, out.Style("Server", 5, false) + " configuration")
@@ -78,54 +70,28 @@ func main() {
     os.Exit(0)
   // list
   } else if strings.Contains(ret, "List") {
-    conn := db.Connect(clientConfig.ConnectionConfigs[0])
-    hosts := db.GetHosts(conn)
-    hostInfoConfig := db.GetHostInfoConfig(hosts, verbose)
-    fmt.Println(db.GetHostInfoDescription(hostInfoConfig))
-    for _, host := range hosts {
-      fmt.Println(db.GetHostInfoString(host, hostInfoConfig))
+    for n, connection := range clientConfig.ConnectionConfigs {
+      conn := db.Connect(connection)
+      hosts := db.GetHosts(conn)
+      hostInfoConfig := db.GetHostInfoConfig(hosts, verbose)
+      if n > 0 {
+        fmt.Println()
+      } else {
+        fmt.Println(db.GetHostInfoDescription(hostInfoConfig))
+      }
+      for _, host := range hosts {
+        fmt.Println(db.GetHostInfoString(host, hostInfoConfig))
+      }
     }
   // host
   } else if strings.Contains(ret, "Host") {
-    // host setup
-    if strings.Contains(ret, "setup") {
-      // TODO select server
-      host.Setup(clientConfig.ConnectionConfigs[0])
-    }
+    host.Menu(clientConfig)
+    // host menu
   // Server Config 
   } else if strings.Contains(ret, "Server") {
     server.Menu()
   // Client Config 
   } else if strings.Contains(ret, "Client") {
-    if check == false {
-      config.CreateClientConfig()
-      out.Info("Succesfully created client config!")
-    } else {
-      options = nil
-      options = append(options, out.Style("Add", 4, false) + " another connection")
-      options = append(options, out.Style("Edit", 2, false) + " configuration")
-      options = append(options, out.Style("Remove", 3, false) + " configuration")
-      options = append(options, out.Style("Exit", 0, false))
-      message = "Client Configuration"
-
-      ret = tui.Survey(message, options)
-      if strings.Contains(ret, "Exit") {
-        out.Info("Bye!")
-        os.Exit(0)
-      } else if strings.Contains(ret, "Add") {
-        config.AddConnectionConfig()
-        out.Info("Succesfully edited client config!")
-      } else if strings.Contains(ret, "Remove") {
-        homeDir := tools.GetHomeDir()
-        configDir := homeDir + "/.config/anyshell"
-        command.Cmd("rm -f " + configDir + "/client-config.yml", false)
-        out.Info("Succesfully removed client config!")
-      } else if strings.Contains(ret, "Edit") {
-        homeDir := tools.GetHomeDir()
-        configDir := homeDir + "/.config/anyshell"
-        tui.Edit(configDir + "/client-config.yml")
-        out.Info("Succesfully edited client config!")
-      }
-    }
+    config.Menu()
   }
 }

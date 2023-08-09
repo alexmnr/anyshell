@@ -9,6 +9,7 @@ import (
 	"tools"
 	"tui"
 	"types"
+  "server"
 
 	"database/sql"
 	"errors"
@@ -20,6 +21,35 @@ import (
 
 	"gopkg.in/yaml.v2"
 )
+var (
+  message string
+  options []string
+  ret string
+)
+
+func Menu (clientConfig types.ClientConfig) {
+  options = append(options, out.Style("Setup", 4, false) + " new host")
+  options = append(options, out.Style("Edit", 2, false) + " configuration")
+  options = append(options, out.Style("Remove", 3, false) + " host from server")
+  options = append(options, out.Style("Exit", 0, false))
+  message = "Host Configuration"
+
+  ret = tui.Survey(message, options)
+  // host setup
+  if strings.Contains(ret, "Setup") {
+    connectionInfo := server.SelectConnection(clientConfig)
+    Setup(connectionInfo)
+  } else if strings.Contains(ret, "Edit") {
+    homeDir := tools.GetHomeDir()
+    configDir := homeDir + "/.config/anyshell"
+    tui.Edit(configDir + "/client-config.yml")
+    out.Info("Succesfully edited host config!")
+  } else if strings.Contains(ret, "Remove") {
+    connectionInfo := server.SelectConnection(clientConfig)
+    RemoveHost(connectionInfo)
+  }
+
+}
 
 var sfunc func() error
 
@@ -75,14 +105,25 @@ func Setup(server types.ConnectionInfo) {
 
   // check if host already exists locally
   sfunc = func() error {
-    check := CheckLocalConcfig(info, server)
+    check := CheckLocalConfig(info, server)
     if check == true {
       out.Error("This Host already exists in local Config!")
       return errors.New("This Host already exists in local Config!")
     }
     return nil
   }
-  tui.RunAction("Checking if host already exists", sfunc, false)
+  tui.RunAction("Checking if host already exists in local config", sfunc, false)
+
+  // check if host already exists on databse
+  sfunc = func() error {
+    check := CheckDBConfig(info, conn)
+    if check == true {
+      out.Error("This Host already exists in in database!")
+      return errors.New("This Host already exists in database!")
+    }
+    return nil
+  }
+  tui.RunAction("Checking if host already exists in database", sfunc, false)
 
   // allow edit of data
   command.Cmd("rm -f /tmp/hostSetup.yml", false)
@@ -251,7 +292,7 @@ func AddHostTODB(hostInfo types.HostInfo, conn *sql.DB) error {
   return nil
 }
 
-func CheckLocalConcfig(info types.HostInfo, server types.ConnectionInfo) bool {
+func CheckLocalConfig(info types.HostInfo, server types.ConnectionInfo) bool {
   conf := config.GetClientConfig()
   if len(conf.HostConfigs) == 0 {
     return false
@@ -265,6 +306,72 @@ func CheckLocalConcfig(info types.HostInfo, server types.ConnectionInfo) bool {
   return true
 }
 
-func DeleteHost(hostInfo types.HostInfo) {
-  return
+func CheckDBConfig(info types.HostInfo, conn *sql.DB) bool {
+  query := fmt.Sprintf("SELECT hosts.Name, hosts.User, hosts.Port FROM hosts WHERE hosts.Name='%s' AND hosts.User='%s' AND hosts.Port='%s';", info.Name, info.User, fmt.Sprint(info.Port))
+  rows, err := conn.Query(query)
+  if err != nil {
+    db.QueryError(query, fmt.Sprint(err))
+    os.Exit(0)
+  }
+  for rows.Next() {
+    return true
+  }
+  return false
+}
+
+func RemoveHostFromLocalConfig(server types.ConnectionInfo) {
+  // read old config
+  homeDir := tools.GetHomeDir()
+  configDir := homeDir + "/.config/anyshell"
+  yamlFile, _ := os.ReadFile(configDir + "/client-config.yml")
+  clientConfig := types.ClientConfig{}
+  if err := yaml.Unmarshal(yamlFile, &clientConfig); err != nil {
+    fmt.Printf(out.Style("Error while reading config: ", 0, false) + "%v \n", err)
+    os.Exit(1)
+  }
+
+  oldConfig := clientConfig.HostConfigs
+  for n, k := range clientConfig.HostConfigs {
+    if k.Server == server {
+      clientConfig.HostConfigs = append(oldConfig[:n], oldConfig[n+1:]...)
+    }
+  }
+
+  // write file
+  yamlData, err := yaml.Marshal(&clientConfig)
+  if err != nil {
+    out.Error(err)
+    os.Exit(0)
+  }
+  fileName := configDir + "/client-config.yml"
+  err = os.WriteFile(fileName, yamlData, 0644)
+  if err != nil {
+    fmt.Printf(out.Style("Error while writing Config: ", 0, false) + "%v \n", err)
+    os.Exit(1)
+  }
+}
+
+func RemoveHost(server types.ConnectionInfo) {
+  conn := db.Connect(server)
+  // deleting from database
+  sfunc = func() error {
+    query := fmt.Sprintf("DELETE FROM hosts WHERE `Name`='%s' AND `User`='%s' AND `Port`='%s';", tools.GetHostName(), tools.GetUser(), fmt.Sprint(GetSSHPort()))
+    out.Info(query)
+    _, err := conn.Query(query)
+    if err != nil {
+      db.QueryError(query, fmt.Sprint(err))
+      os.Exit(0)
+    }
+    return nil
+  }
+  tui.RunAction("Deleting Host from Database", sfunc, false)
+
+  // delete from local config
+  sfunc = func() error {
+    RemoveHostFromLocalConfig(server)
+    return nil
+  }
+  tui.RunAction("Deleting Host from local config", sfunc, false)
+
+  out.Info("Done!")
 }
