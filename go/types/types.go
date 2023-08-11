@@ -42,3 +42,9 @@ type ClientConfig struct {
   ConnectionConfigs []ConnectionInfo
   HostConfigs []HostConfig
 }
+
+type ReverseTunnelConfig struct {
+  ConnectionInfo ConnectionInfo
+  LocalPort int
+  RemotePort int
+}

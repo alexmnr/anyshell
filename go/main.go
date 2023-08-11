@@ -3,14 +3,14 @@ package main
 import (
 	"config"
 	"db"
+	"host"
 	"out"
 	"server"
 	"tui"
-  "host"
-  "types"
+	"types"
 
+	"fmt"
 	"os"
-  "fmt"
 	"strings"
 )
 var message string
@@ -41,6 +41,10 @@ func main() {
         ret = "Host"
       } else if arg == "setup" {
         ret += " setup"
+      } else if arg == "setup" {
+        ret += " setup"
+      } else if arg == "daemon" {
+        ret += " daemon"
       }
     }
   } else {

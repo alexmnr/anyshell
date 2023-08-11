@@ -7,15 +7,16 @@ import (
 	"tui"
 	"types"
 
-	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+  "golang.org/x/crypto/bcrypt"
 )
 
 var (
+  sfunc func() error
   message string
   options []string
   input string
@@ -87,21 +88,30 @@ func Menu(){
     out.Info("Starting docker-compose...")
     command.Cmd("cd /opt/anyshell-server/docker && docker-compose up -d", true)
     // waiting for db to be ready
-    fmt.Printf(out.Style("Info: ", 1, true) + "Waiting for db to be ready ")
-    for {
-      err, _, _ := command.Cmd("docker exec anyshell-db /bin/mariadb -uroot -p" + serverInfo.RootPassword, false)
-      if err == nil {
-        fmt.Println()
-        out.Info("Starting db configuration")
-        break
-      } else {
-        fmt.Printf(".")
+    sfunc = func() error {
+      for {
+        err, _, _ := command.Cmd("docker exec anyshell-db /bin/mariadb -uroot -p" + serverInfo.RootPassword, false)
+        if err == nil {
+          break
+        } 
       }
+      return nil
     }
+    tui.RunAction("Waiting for db to be ready", sfunc, false)
     // configurating db
-    time.Sleep(1 * time.Second)
-    ConfigureDb(serverInfo)
-    out.Info("done!")
+    sfunc = func() error {
+      time.Sleep(1 * time.Second)
+      ConfigureDb(serverInfo)
+      return nil
+    }
+    tui.RunAction("Configurating database", sfunc, false)
+
+    // configurating ssh container
+    sfunc = func() error {
+      AddSSHUser(serverInfo.Name, serverInfo.UserPassword)
+      return nil
+    }
+    tui.RunAction("Configurating ssh container", sfunc, false)
 
     out.Warning("You need to forward these ports:\n  " + serverInfo.DbPort + "\n  " + serverInfo.SshPort)
 
@@ -113,13 +123,37 @@ func Menu(){
     // check if info correct
     CheckDbInfo(dbInfo)
     // create db
-    nfo := types.ServerInfo{
+    serverInfo := types.ServerInfo{
       Name: dbInfo.Name,
+      UserPassword: dbInfo.UserPassword,
       RootPassword: dbInfo.RootPassword,
     }
-    out.Info("Starting db configuration")
-    time.Sleep(1 * time.Second)
-    ConfigureDb(nfo)
+    // waiting for db to be ready
+    sfunc = func() error {
+      for {
+        err, _, _ := command.Cmd("docker exec anyshell-db /bin/mariadb -uroot -p" + serverInfo.RootPassword, false)
+        if err == nil {
+          break
+        } 
+      }
+      return nil
+    }
+    tui.RunAction("Waiting for db to be ready", sfunc, false)
+    // configurating db
+    sfunc = func() error {
+      time.Sleep(1 * time.Second)
+      ConfigureDb(serverInfo)
+      return nil
+    }
+    tui.RunAction("Configurating database", sfunc, false)
+
+    // configurating ssh container
+    sfunc = func() error {
+      AddSSHUser(serverInfo.Name, serverInfo.UserPassword)
+      return nil
+    }
+    tui.RunAction("Configurating ssh container", sfunc, false)
+
     out.Info("done!")
 
   ///////// remove /////////
@@ -183,6 +217,7 @@ func CreateDirectory(serverInfo types.ServerInfo) {
     out.Error("System is not supported yet")
     os.Exit(0)
   }
+  command.SmartCmd("sudo cp -r /opt/anyshell/server/docker/ssh /opt/anyshell-server/docker")
   // change ownership
   user := tools.GetUser()
   command.SmartCmd("sudo chown " + user + ":" + user + " /opt/anyshell-server -R")
@@ -213,3 +248,8 @@ func FillDockerCompose(serverInfo types.ServerInfo) {
   out.Info("Generated docker-compose.yml!")
 }
 
+func AddSSHUser(username string, password string) {
+  crypt, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
+  exec := "useradd -m -p '" + string(crypt) + "' " + username
+  command.SmartCmd("docker exec anyshell-ssh " + exec)
+}

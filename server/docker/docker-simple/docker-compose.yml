@@ -20,6 +20,6 @@ services:
     ports:
       - '<sshPort>:22'
     build: 
-      context: ./ssh
+      context: ../ssh
       args:
         password: <userPassword>
