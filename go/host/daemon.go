@@ -16,7 +16,7 @@ import (
 
 var sfunc func() error
 
-func Daemon(config types.HostConfig) {
+func Daemon(config types.HostConfig, service bool) {
   conn := db.Connect(config.Server)
   var hosting bool
   var remotePort int
@@ -31,7 +31,7 @@ func Daemon(config types.HostConfig) {
       UpdateHost(config, conn)
       return nil
     }
-    tui.RunAction(out.Style("Updating Database", 5, false), sfunc, false)
+    if service == false {tui.RunAction(out.Style("Updating Database", 5, false), sfunc, false)} else {fmt.Println(out.Style("Updating Database", 5, false)); sfunc()}
 
     // check for requests
     // query := fmt.Sprintf("SELECT requests.ID, hosts.ID, hosts.Port FROM requests, hosts WHERE requests.`HostID`=hosts.ID AND hosts.Name='%s' AND hosts.User='%s' AND hosts.Port='%s';", config.Name, config.User, fmt.Sprint(config.Port))
@@ -42,7 +42,7 @@ func Daemon(config types.HostConfig) {
       if hosting == false {
         ///////// Starting /////////
         // start ssh server
-        checkSSHServer()
+        checkSSHServer(service)
         // create reverse tunnel
         sfunc = func() error {
           localPort := GetSSHPort()
@@ -57,7 +57,7 @@ func Daemon(config types.HostConfig) {
           msg := <-errorCh
           return msg
         }
-        tui.RunAction(out.Style("Creating", 1, false) + " reverse tunnel", sfunc, false)
+        if service == false {tui.RunAction(out.Style("Creating", 1, false) + " reverse tunnel", sfunc, false)} else {fmt.Println(out.Style("Creating", 1, false) + " reverse tunnel"); sfunc()}
         // create connection entry
         sfunc = func() error {
           connectionID = db.GetID(conn, "connections")
@@ -68,7 +68,7 @@ func Daemon(config types.HostConfig) {
           }
           return nil
         }
-        tui.RunAction(out.Style("Creating", 1, false) + " connection entry", sfunc, false)
+        if service == false {tui.RunAction(out.Style("Creating", 1, false) + " connection entry", sfunc, false)} else {fmt.Println(out.Style("Creating", 1, false) + " connection entry"); sfunc()}
 
         hosting = true
       } else {
@@ -77,7 +77,7 @@ func Daemon(config types.HostConfig) {
           UpdateConnection(config, conn)
           return nil
         }
-        tui.RunAction(out.Style("Keeping connection alive", 5, false), sfunc, false)
+        if service == false {tui.RunAction(out.Style("Keeping connection alive", 5, false), sfunc, false)} else {fmt.Println(out.Style("Keeping connection alive", 5, false)); sfunc()}
       }
       ///////// Stopping /////////
     } else if queryErr == sql.ErrNoRows {
@@ -88,7 +88,7 @@ func Daemon(config types.HostConfig) {
             command.Cmd("sudo systemctl stop sshd.service", false)
             return nil
           }
-          tui.RunAction(out.Style("Stopping", 0, false) + " ssh server", sfunc, false)
+          if service == false {tui.RunAction(out.Style("Stopping", 0, false) + " ssh server", sfunc, false)} else {fmt.Println(out.Style("Stopping", 0, false) + " ssh server"); sfunc()}
         }
         // Stop reverse tunnel
         sfunc = func() error {
@@ -100,7 +100,7 @@ func Daemon(config types.HostConfig) {
           }
           return nil
         }
-        tui.RunAction(out.Style("Deleting", 0, false) + " connection with ID: " + fmt.Sprint(connectionID), sfunc, false)
+        if service == false {tui.RunAction(out.Style("Deleting", 0, false) + " connection with ID: " + fmt.Sprint(connectionID), sfunc, false)} else {fmt.Println(out.Style("Deleting", 0, false) + " connection with ID: " + fmt.Sprint(connectionID)); sfunc()}
         hosting = false
       }
     }
@@ -132,13 +132,13 @@ func UpdateConnection(hostConfig types.HostConfig, conn *sql.DB) {
   }
 }
 
-func checkSSHServer() {
+func checkSSHServer(service bool) {
   _, output, _ := command.Cmd("sudo systemctl is-active sshd.service", false)
   if strings.Contains(output, "inactive") == true {
     sfunc = func() error {
       command.Cmd("sudo systemctl start sshd.service", false)
       return nil
     }
-    tui.RunAction(out.Style("Starting", 2, false) + " ssh server", sfunc, false)
+    if service == false {tui.RunAction(out.Style("Starting", 2, false) + " ssh server", sfunc, false)} else {fmt.Println(out.Style("Starting", 2, false) + " ssh server"); sfunc()}
   }
 }

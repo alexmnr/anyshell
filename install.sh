@@ -99,4 +99,7 @@ go build .
 sudo rm -f /usr/bin/anyshell &>/dev/null
 sudo ln -s /opt/anyshell/go/anyshell /usr/bin
 
+echo "INFO: Linking anyshell service..."
+sudo ln -s /opt/anyshell/etc/anyshell.service /etc/systemd/system
+
 echo "INFO: done!"

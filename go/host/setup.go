@@ -105,6 +105,14 @@ func Setup(server types.ConnectionInfo) {
     return nil
   }
   tui.RunAction("Adding host to local config", sfunc, false)
+
+  // Starting and enabling anyshell service  
+  sfunc = func() error {
+    command.Cmd("sudo systemctl start anyshell.service", false)
+    command.Cmd("sudo systemctl enable anyshell.service", false)
+    return nil
+  }
+  tui.RunAction("Starting and enabling anyshell service", sfunc, false)
   
   out.Info("done!")
 }

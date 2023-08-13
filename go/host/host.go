@@ -19,6 +19,7 @@ var (
 )
 
 func Menu (clientConfig types.ClientConfig) {
+  service := false
   args := os.Args
   for _, arg := range args {
     if arg == "setup" {
@@ -29,6 +30,8 @@ func Menu (clientConfig types.ClientConfig) {
       ret = "Remove"
     } else if arg == "daemon" {
       ret = "Daemon"
+    } else if arg == "service" {
+      service = true
     }
   }
 
@@ -61,7 +64,7 @@ func Menu (clientConfig types.ClientConfig) {
     }
     for _, hostConfig := range clientConfig.HostConfigs {
       // TODO full multi host support
-      Daemon(hostConfig)
+      Daemon(hostConfig, service)
     }
   // Exit
   } else {
