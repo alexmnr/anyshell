@@ -38,13 +38,11 @@ func Menu() {
       AddConnectionConfig()
       out.Info("Succesfully edited client config!")
     } else if strings.Contains(ret, "Remove") {
-      homeDir := tools.GetHomeDir()
-      configDir := homeDir + "/.config/anyshell"
+      configDir := "/etc/anyshell"
       command.Cmd("rm -f " + configDir + "/client-config.yml", false)
       out.Info("Succesfully removed client config!")
     } else if strings.Contains(ret, "Edit") {
-      homeDir := tools.GetHomeDir()
-      configDir := homeDir + "/.config/anyshell"
+      configDir := "/etc/anyshell"
       tui.Edit(configDir + "/client-config.yml")
       out.Info("Succesfully edited client config!")
     }
@@ -54,8 +52,7 @@ func Menu() {
 func ClientConfigCheck() bool {
   // check if necessary directory exists
   found := true
-  homeDir := tools.GetHomeDir()
-  configDir := homeDir + "/.config/anyshell"
+  configDir := "/etc/anyshell"
   if tools.CheckExist(configDir) == false {
     found = false
   } else {
@@ -67,9 +64,10 @@ func ClientConfigCheck() bool {
 }
 
 func CreateClientConfig() {
-  homeDir := tools.GetHomeDir()
-  configDir := homeDir + "/.config/anyshell"
-  command.Mkdir(configDir, false)
+  command.Cmd("sudo true", true)
+  configDir := "/etc/anyshell"
+  command.Cmd("sudo mkdir " + configDir, false)
+  command.Cmd("sudo chmod a+rw " + configDir, false)
 
   var connectionConfigs []types.ConnectionInfo
   connectionConfig := tui.GetConnectionInfo()
@@ -92,8 +90,7 @@ func CreateClientConfig() {
 }
 
 func AddConnectionConfig() {
-  homeDir := tools.GetHomeDir()
-  configDir := homeDir + "/.config/anyshell"
+  configDir := "/etc/anyshell"
 
   clientConfig := GetClientConfig()
   connectionConfig := tui.GetConnectionInfo()
@@ -113,8 +110,7 @@ func AddConnectionConfig() {
 }
 
 func GetClientConfig() types.ClientConfig {
-  homeDir := tools.GetHomeDir()
-  configDir := homeDir + "/.config/anyshell"
+  configDir := "/etc/anyshell"
   yamlFile, _ := os.ReadFile(configDir + "/client-config.yml")
   clientConfig := types.ClientConfig{}
   if err := yaml.Unmarshal(yamlFile, &clientConfig); err != nil {

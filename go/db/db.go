@@ -49,3 +49,29 @@ func Check(db *sql.DB) bool {
     return true
   }
 }
+
+func GetID(conn *sql.DB, database string) int {
+  id := 0
+  query := "SELECT ID FROM " + database + " ORDER BY `ID` ASC;"
+  rows, err := conn.Query(query)
+  if err != nil {
+    QueryError(query, fmt.Sprint(err))
+  }
+  defer rows.Close()
+
+  for rows.Next() {
+    var check int
+    err := rows.Scan(&check)
+    if err != nil {
+      out.Error(err)
+      os.Exit(0)
+    }
+    if check == id {
+      id++
+    } else {
+      return id
+    }
+  }
+  return id
+}
+

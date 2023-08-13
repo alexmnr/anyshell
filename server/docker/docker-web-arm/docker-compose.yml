@@ -22,7 +22,7 @@ services:
     build: 
       context: ./ssh
       args:
-        password: <userPassword>
+        password: <rootPassword>
 
   web:
     container_name: anyshell-web

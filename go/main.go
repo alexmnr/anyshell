@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
 )
 var message string
 var options []string
@@ -27,6 +28,7 @@ func main() {
     clientConfig = config.GetClientConfig()
   }
   verbose = false
+
   //////// Arguments ///////
   args := os.Args
   if check == true {

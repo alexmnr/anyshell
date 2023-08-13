@@ -15,8 +15,7 @@ import (
 
 func RemoveHostFromLocalConfig(server types.ConnectionInfo) {
   // read old config
-  homeDir := tools.GetHomeDir()
-  configDir := homeDir + "/.config/anyshell"
+  configDir := "/etc/anyshell"
   yamlFile, _ := os.ReadFile(configDir + "/client-config.yml")
   clientConfig := types.ClientConfig{}
   if err := yaml.Unmarshal(yamlFile, &clientConfig); err != nil {

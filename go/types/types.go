@@ -15,6 +15,7 @@ type HostInfo struct {
 type HostConfig struct {
   Server ConnectionInfo
   SSHStartStop bool
+  ID int
   Name string
   User string
   Port int

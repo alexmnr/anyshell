@@ -1,6 +1,6 @@
 FROM ubuntu
 
-RUN apt-get update && apt-get install -y --no-install-recommends openssh-server openssh-client lsof
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-server openssh-client net-tools
 
 ARG password
 RUN echo "root:${password}" | chpasswd

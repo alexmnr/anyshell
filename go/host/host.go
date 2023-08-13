@@ -2,16 +2,12 @@ package host
 
 import (
 	"command"
-	"db"
 	"out"
 	"strconv"
-	"tools"
 	"tui"
 	"types"
   "server"
 
-	"database/sql"
-	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -51,8 +47,7 @@ func Menu (clientConfig types.ClientConfig) {
     Setup(connectionInfo)
   // Edit
   } else if strings.Contains(ret, "Edit") {
-    homeDir := tools.GetHomeDir()
-    configDir := homeDir + "/.config/anyshell"
+    configDir := "/etc/anyshell"
     tui.Edit(configDir + "/client-config.yml")
     out.Info("Succesfully edited host config!")
   // Remove
@@ -65,6 +60,7 @@ func Menu (clientConfig types.ClientConfig) {
       out.Warning("No hosts configured, run 'anyshell host setup")
     }
     for _, hostConfig := range clientConfig.HostConfigs {
+      // TODO full multi host support
       Daemon(hostConfig)
     }
   // Exit
@@ -73,32 +69,6 @@ func Menu (clientConfig types.ClientConfig) {
     os.Exit(0)
   }
 
-}
-
-
-func GetID(conn *sql.DB) int {
-  id := 0
-  query := "SELECT ID FROM hosts ORDER BY `ID` ASC;"
-  rows, err := conn.Query(query)
-  if err != nil {
-    db.QueryError(query, fmt.Sprint(err))
-  }
-  defer rows.Close()
-
-  for rows.Next() {
-    var check int
-    err := rows.Scan(&check)
-    if err != nil {
-      out.Error(err)
-      os.Exit(0)
-    }
-    if check == id {
-      id++
-    } else {
-      return id
-    }
-  }
-  return id
 }
 
 func GetSSHPort() int {

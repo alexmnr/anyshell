@@ -111,7 +111,7 @@ func Setup(server types.ConnectionInfo) {
 
 func GetHostParameters(conn *sql.DB) types.HostInfo {
   info := types.HostInfo{}
-  info.ID = GetID(conn)
+  info.ID = db.GetID(conn, "hosts")
   info.Name = tools.GetHostName()
   info.User = tools.GetUser()
   info.Port = GetSSHPort()
@@ -126,8 +126,7 @@ func GetHostParameters(conn *sql.DB) types.HostInfo {
 
 func AddHostToConfig(info types.HostInfo, server types.ConnectionInfo) {
   // read old config
-  homeDir := tools.GetHomeDir()
-  configDir := homeDir + "/.config/anyshell"
+  configDir := "/etc/anyshell"
   yamlFile, _ := os.ReadFile(configDir + "/client-config.yml")
   clientConfig := types.ClientConfig{}
   if err := yaml.Unmarshal(yamlFile, &clientConfig); err != nil {
@@ -138,6 +137,7 @@ func AddHostToConfig(info types.HostInfo, server types.ConnectionInfo) {
   // create config
   hostConfig := types.HostConfig{
     Server: server,
+    ID: info.ID,
     Name: info.Name,
     User: info.User,
     Port: info.Port,

@@ -1,32 +1,48 @@
-package tunnel
+package ssh
 
 import (
-  "types"
-  "out"
+	"out"
+	"strings"
+	"types"
 
-  "fmt"
-  "bytes"
+	"bytes"
+	"fmt"
 
-	"golang.org/x/crypto/ssh"
+	libssh "golang.org/x/crypto/ssh"
 )
 
 func GetFreeRemotePort(connectionInfo types.ConnectionInfo, start int) int {
   port := start
 
-  return port
+  err, output := CommandInSSH(connectionInfo, "netstat -tunlp")
+  if err != nil {
+    out.Error("Could not get free remote port")
+    return 0
+  }
+  for {
+    if strings.Contains(output, ":" + fmt.Sprint(port)) == false {
+      return port
+    } else {
+      port++
+    }
+    if port >= 51000 {
+      out.Error("Could not get free remote port")
+      return 0
+    }
+  }
 }
 
 func CommandInSSH(connectionInfo types.ConnectionInfo, command string) (error, string) {
-  sshConfig := &ssh.ClientConfig{
+  sshConfig := &libssh.ClientConfig{
     User: connectionInfo.Name,
-    Auth: []ssh.AuthMethod{
-      ssh.Password(connectionInfo.Password),
+    Auth: []libssh.AuthMethod{
+      libssh.Password(connectionInfo.Password),
     },
-    HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+    HostKeyCallback: libssh.InsecureIgnoreHostKey(),
   }
 
   // Connect to SSH remote server using serverEndpoint
-  serverConn, err := ssh.Dial("tcp", endpointString(connectionInfo.Host, connectionInfo.SshPort), sshConfig)
+  serverConn, err := libssh.Dial("tcp", endpointString(connectionInfo.Host, connectionInfo.SshPort), sshConfig)
   if err != nil {
     out.Error("Dial INTO remote server error: " + fmt.Sprint(err))
     return err, ""
