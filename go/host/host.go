@@ -3,19 +3,22 @@ package host
 import (
 	"command"
 	"out"
+	"server"
 	"strconv"
+	"time"
 	"tui"
 	"types"
-  "server"
 
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
 var (
   message string
   options []string
   ret string
+  wg sync.WaitGroup
 )
 
 func Menu (clientConfig types.ClientConfig) {
@@ -64,8 +67,11 @@ func Menu (clientConfig types.ClientConfig) {
     }
     for _, hostConfig := range clientConfig.HostConfigs {
       // TODO full multi host support
-      Daemon(hostConfig, service)
+      wg.Add(1)
+      go Daemon(hostConfig, service, &wg)
     }
+    for {time.Sleep(5 * time.Second)}
+    // wg.Wait()
   // Exit
   } else {
     out.Info("Bye!")

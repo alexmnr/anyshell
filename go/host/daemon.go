@@ -12,11 +12,14 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+  "sync"
 )
 
 var sfunc func() error
 
-func Daemon(config types.HostConfig, service bool) {
+func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
+  out.Info(config)
+  defer wg.Done()
   conn := db.Connect(config.Server)
   var hosting bool
   var remotePort int

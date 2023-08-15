@@ -29,6 +29,10 @@ func main() {
   }
   verbose = false
 
+  hostInfo, connectionInfo := tui.SelectHost(clientConfig)
+  out.Info(hostInfo)
+  out.Info(connectionInfo)
+  os.Exit(0)
   //////// Arguments ///////
   args := os.Args
   if check == true {

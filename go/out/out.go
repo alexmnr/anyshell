@@ -5,7 +5,7 @@ import (
   "fmt"
 )
 
-var color [6]string = [6] string {
+var Color [6]string = [6] string {
   "#FA4453",
   "#6EFA73",
   "#FFAE03",
@@ -15,8 +15,8 @@ var color [6]string = [6] string {
 }
 
 func Style(input string, style int, bold bool) string {
-  if style < len(color) {
-    return lipgloss.NewStyle().Foreground(lipgloss.Color(color[style])).Bold(bold).Render(input)
+  if style < len(Color) {
+    return lipgloss.NewStyle().Foreground(lipgloss.Color(Color[style])).Bold(bold).Render(input)
   } else {
     return input
   }
@@ -36,14 +36,14 @@ func Warning(info interface{}) {
 }
 
 func CommandError(command string, err error, out string, error string) {
-  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(color[0])).Bold(true).PaddingLeft(0).Render("Error running Command: ") + command) 
-  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(color[2])).Bold(false).PaddingLeft(1).Render("Error Code: ") + fmt.Sprint(err)) 
-  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(color[2])).Bold(false).PaddingLeft(1).Render("Command stdout: ") + out) 
-  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(color[2])).Bold(false).PaddingLeft(1).Render("Command stderr: ") + error) 
+  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(Color[0])).Bold(true).PaddingLeft(0).Render("Error running Command: ") + command) 
+  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(Color[2])).Bold(false).PaddingLeft(1).Render("Error Code: ") + fmt.Sprint(err)) 
+  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(Color[2])).Bold(false).PaddingLeft(1).Render("Command stdout: ") + out) 
+  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(Color[2])).Bold(false).PaddingLeft(1).Render("Command stderr: ") + error) 
 }
 
 func TestColors() {
-  for i := 0; i < len(color); i++ {
+  for i := 0; i < len(Color); i++ {
     fmt.Println(Style("This is Color: " + fmt.Sprint(i), i, false))
     fmt.Println(Style("This is Color: " + fmt.Sprint(i) + " in bold", i, true))
   }
