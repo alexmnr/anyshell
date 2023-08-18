@@ -8,6 +8,7 @@ import (
 	"server"
 	"tui"
 	"types"
+  "client"
 
 	"fmt"
 	"os"
@@ -29,10 +30,6 @@ func main() {
   }
   verbose = false
 
-  hostInfo, connectionInfo := tui.SelectHost(clientConfig)
-  out.Info(hostInfo)
-  out.Info(connectionInfo)
-  os.Exit(0)
   //////// Arguments ///////
   args := os.Args
   if check == true {
@@ -41,8 +38,10 @@ func main() {
         verbose = true
       } else if arg == "-vv" {
         verbose = true
-      } else if arg == "list" {
+      } else if arg == "list" || arg == "ls" || arg == "l" {
         ret = "List"
+      } else if arg == "connect" || arg == "con" || arg == "c" {
+        ret = "Connect"
       } else if arg == "host" {
         ret = "Host"
       } else if arg == "setup" {
@@ -62,7 +61,8 @@ func main() {
   if check == false {
     options = append(options, out.Style("Client", 4, false) + " configuration")
   } else {
-    options = append(options, out.Style("List", 2, false) + "")
+    options = append(options, out.Style("Connect", 1, false) + " to host")
+    options = append(options, out.Style("List", 2, false) + " hosts")
     options = append(options, out.Style("Host", 4, false) + " configuration")
     options = append(options, out.Style("Client", 5, false) + " configuration")
   }
@@ -83,16 +83,24 @@ func main() {
     for n, connection := range clientConfig.ConnectionConfigs {
       conn := db.Connect(connection)
       hosts := db.GetHosts(conn)
-      hostInfoConfig := db.GetHostInfoConfig(hosts, verbose)
+      hostInfoConfig := client.GetHostInfoConfig(hosts, verbose)
       if n > 0 {
         fmt.Println()
       } else {
-        fmt.Println(db.GetHostInfoDescription(hostInfoConfig))
+        fmt.Println(client.GetHostInfoDescription(hostInfoConfig))
       }
       for _, host := range hosts {
-        fmt.Println(db.GetHostInfoString(host, hostInfoConfig))
+        fmt.Println(client.GetHostInfoString(host, hostInfoConfig))
       }
     }
+  // connect
+  } else if strings.Contains(ret, "Connect") {
+    check, hostInfo, connectionInfo := client.CheckArgs(clientConfig)
+    if check == false {
+      hostInfo, connectionInfo = tui.SelectHost(clientConfig)
+    }
+    out.Info(hostInfo)
+    out.Info(connectionInfo)
   // host
   } else if strings.Contains(ret, "Host") {
     host.Menu(clientConfig)

@@ -6,12 +6,11 @@ import (
 	"strconv"
 	"strings"
 	"types"
+  "client"
 
 	"fmt"
 	"os"
 	"regexp"
-
-	// "strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -321,12 +320,12 @@ func (m selectHostModel) View() string {
   for _, k := range m.hosts {
     temp = append(temp, k...)
   }
-  hostInfoConfig := db.GetHostInfoConfig(temp, m.verbose)
+  hostInfoConfig := client.GetHostInfoConfig(temp, m.verbose)
   for sn, hosts := range m.shownHosts {
     server := m.shownServers[sn]
     list += serverStyle.Width(m.width).Render("Server " + fmt.Sprint(sn) + ": " + out.Style(server.Name, 2, true) + "@" + out.Style(server.Host, 4, true) + ":" + out.Style(server.DbPort, 5, true)) + "\n"
     for hn, host := range hosts {
-      string := db.GetHostInfoString(host, hostInfoConfig)
+      string := client.GetHostInfoString(host, hostInfoConfig)
       if hn == m.hostIndex && sn == m.serverIndex {
         if host.Online == true {
           list += selectStyle.Width(m.width - 2).Bold(true).BorderForeground(lipgloss.Color(out.Color[1])).Render("  " + string)
