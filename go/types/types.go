@@ -21,6 +21,17 @@ type HostConfig struct {
   Port int
 }
 
+type HostInfoConfig struct {
+  Verbose bool
+  IDLength int
+  NameLength int
+  UserLength int
+  PortLength int
+  PublicIPLength int
+  LocalIPLength int
+  LastOnlineLength int
+}
+
 type ServerInfo struct {
   Name string
   DbPort string
@@ -45,6 +56,12 @@ type ClientConfig struct {
 }
 
 type ReverseTunnelConfig struct {
+  ConnectionInfo ConnectionInfo
+  LocalPort int
+  RemotePort int
+}
+
+type ForwardTunnelConfig struct {
   ConnectionInfo ConnectionInfo
   LocalPort int
   RemotePort int

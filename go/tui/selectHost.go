@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"types"
-  "client"
 
 	"fmt"
 	"os"
@@ -330,12 +329,12 @@ func (m selectHostModel) View() string {
   for _, k := range m.hosts {
     temp = append(temp, k...)
   }
-  hostInfoConfig := client.GetHostInfoConfig(temp, m.verbose)
+  hostInfoConfig := getHostInfoConfig(temp, m.verbose)
   for sn, hosts := range m.shownHosts {
     server := m.shownServers[sn]
     list += serverStyle.Width(m.width).Render("Server " + fmt.Sprint(sn) + ": " + out.Style(server.Name, 2, true) + "@" + out.Style(server.Host, 4, true) + ":" + out.Style(server.DbPort, 5, true)) + "\n"
     for hn, host := range hosts {
-      string := client.GetHostInfoString(host, hostInfoConfig)
+      string := getString(host, hostInfoConfig)
       if hn == m.hostIndex && sn == m.serverIndex {
         if host.Online == true {
           list += selectStyle.Width(m.width - 2).Bold(true).BorderForeground(lipgloss.Color(out.Color[1])).Render("  " + string)
@@ -381,7 +380,7 @@ func (m selectHostModel) View() string {
   return header + "\n" + list + lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderTop(true).BorderForeground(lipgloss.Color(color[0])).Render(menu)
 }
 
-func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.ConnectionInfo) {
+func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.ConnectionInfo, bool) {
   var hosts [][]types.HostInfo
   var servers []types.ConnectionInfo
   for _, config := range clientConfig.ConnectionConfigs {
@@ -411,5 +410,70 @@ func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.Connecti
 		out.Error("You need to select something!")
     os.Exit(0)
   }
-  return mm.selectedHost, mm.selectedConnection
+  return mm.selectedHost, mm.selectedConnection, mm.tunnel
+}
+
+func getString(host types.HostInfo, config types.HostInfoConfig) string {
+  var string string
+  if config.Verbose == true {
+    des := " %-" + fmt.Sprint(config.IDLength) + "s | %-" + fmt.Sprint(config.NameLength) + "s | %-" + fmt.Sprint(config.UserLength) + "s | %-" + fmt.Sprint(config.PortLength) + "s | %-" + fmt.Sprint(config.LastOnlineLength) + "s | %-" + fmt.Sprint(config.LocalIPLength) + "s | %-" + fmt.Sprint(config.PublicIPLength) + "s | %s "
+    string = fmt.Sprintf(des,
+    fmt.Sprint(host.ID), host.Name, host.User, fmt.Sprint(host.Port), host.LastOnline, host.LocalIP, host.PublicIP, fmt.Sprint(host.Version))
+  } else {
+    des := " %-" + fmt.Sprint(config.IDLength) + "s | %-" + fmt.Sprint(config.NameLength) + "s | %-" + fmt.Sprint(config.UserLength) + "s | %-" + fmt.Sprint(config.PortLength) + "s | %s"
+    string = fmt.Sprintf(des,
+    fmt.Sprint(host.ID), host.Name, host.User, fmt.Sprint(host.Port), host.LastOnline)
+  }
+  string = colorString(string, host.Online)
+  return string
+}
+
+func colorString(input string, online bool) string {
+  onlineColor := "#6EFA72"
+  offlineColor := "#FF0F80"
+  if online == true {
+    return lipgloss.NewStyle().Foreground(lipgloss.Color(onlineColor)).Render(input)
+  } else {
+    return lipgloss.NewStyle().Foreground(lipgloss.Color(offlineColor)).Render(input)
+  }
+}
+
+func getHostInfoConfig(hosts []types.HostInfo, verbose bool) types.HostInfoConfig {
+  config := types.HostInfoConfig{
+    Verbose: verbose,
+    IDLength: 2,
+    NameLength: 4,
+    UserLength: 4,
+    PortLength: 4,
+    PublicIPLength: 9,
+    LocalIPLength: 8,
+    LastOnlineLength: 11,
+  }
+  for _, host := range hosts {
+    if len(fmt.Sprint(host.ID)) > config.IDLength {
+      config.IDLength = len(fmt.Sprint(host.ID))
+    }
+    if len(host.Name) > config.NameLength {
+      config.NameLength = len(host.Name)
+    }
+    if len(host.Name) > config.NameLength {
+      config.NameLength = len(host.Name)
+    }
+    if len(host.User) > config.UserLength {
+      config.UserLength = len(host.User)
+    }
+    if len(fmt.Sprint(host.Port)) > config.PortLength {
+      config.PortLength = len(fmt.Sprint(host.Port))
+    }
+    if len(host.PublicIP) > config.PublicIPLength {
+      config.PublicIPLength = len(host.PublicIP)
+    }
+    if len(host.LocalIP) > config.LocalIPLength {
+      config.LocalIPLength = len(host.LocalIP)
+    }
+    if len(host.LastOnline) > config.LastOnlineLength {
+      config.LastOnlineLength = len(host.LastOnline)
+    }
+  }
+  return config
 }

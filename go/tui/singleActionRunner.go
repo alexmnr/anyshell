@@ -1,8 +1,8 @@
 package tui
 
 import (
-  "tools"
-  "command"
+  // "tools"
+  // "command"
 
 	"os"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -92,9 +92,9 @@ func RunAction(name string, cmd func() error, debug bool) {
     Cmd: cmd,
   }
   // get sudo rights
-  if tools.GetUser() != "root"{
-    command.Cmd("sudo true", true)
-  }
+  // if tools.GetUser() != "root"{
+  //   command.Cmd("sudo true", true)
+  // }
   // create model
   model := new_single_model(action, debug)
   p := tea.NewProgram(model)

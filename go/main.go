@@ -1,6 +1,7 @@
 package main
 
 import (
+	"client"
 	"config"
 	"db"
 	"host"
@@ -8,12 +9,10 @@ import (
 	"server"
 	"tui"
 	"types"
-  "client"
 
 	"fmt"
 	"os"
 	"strings"
-
 )
 var message string
 var options []string
@@ -29,6 +28,13 @@ func main() {
     clientConfig = config.GetClientConfig()
   }
   verbose = false
+
+  // quitCh := make(chan bool)
+  // tui.Timer(10, quitCh)
+  // quitCh := make(chan bool)
+  // finished := tui.Timer(10, quitCh)
+  // out.Info(finished)
+  // os.Exit(0)
 
   //////// Arguments ///////
   args := os.Args
@@ -95,12 +101,7 @@ func main() {
     }
   // connect
   } else if strings.Contains(ret, "Connect") {
-    check, hostInfo, connectionInfo := client.CheckArgs(clientConfig)
-    if check == false {
-      hostInfo, connectionInfo = tui.SelectHost(clientConfig)
-    }
-    out.Info(hostInfo)
-    out.Info(connectionInfo)
+    client.Connect(clientConfig)
   // host
   } else if strings.Contains(ret, "Host") {
     host.Menu(clientConfig)

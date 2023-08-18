@@ -7,19 +7,10 @@ import (
   "github.com/charmbracelet/lipgloss"
 )
 
-type HostInfoConfig struct {
-  Verbose bool
-  IDLength int
-  NameLength int
-  UserLength int
-  PortLength int
-  PublicIPLength int
-  LocalIPLength int
-  LastOnlineLength int
-}
 
-func GetHostInfoConfig(hosts []types.HostInfo, verbose bool) HostInfoConfig {
-  config := HostInfoConfig{
+
+func GetHostInfoConfig(hosts []types.HostInfo, verbose bool) types.HostInfoConfig {
+  config := types.HostInfoConfig{
     Verbose: verbose,
     IDLength: 2,
     NameLength: 4,
@@ -58,7 +49,7 @@ func GetHostInfoConfig(hosts []types.HostInfo, verbose bool) HostInfoConfig {
   return config
 }
 
-func GetHostInfoDescription(config HostInfoConfig) string {
+func GetHostInfoDescription(config types.HostInfoConfig) string {
   var string string
   if config.Verbose == true {
     des := " %-" + str(config.IDLength) + "s | %-" + str(config.NameLength) + "s | %-" + str(config.UserLength) + "s | %-" + str(config.PortLength) + "s | %-" + str(config.LastOnlineLength) + "s | %-" + str(config.LocalIPLength) + "s | %-" + str(config.PublicIPLength) + "s | %s "
@@ -72,7 +63,7 @@ func GetHostInfoDescription(config HostInfoConfig) string {
   return string
 }
 
-func GetHostInfoString(host types.HostInfo, config HostInfoConfig) string {
+func GetHostInfoString(host types.HostInfo, config types.HostInfoConfig) string {
   var string string
   if config.Verbose == true {
     des := " %-" + str(config.IDLength) + "s | %-" + str(config.NameLength) + "s | %-" + str(config.UserLength) + "s | %-" + str(config.PortLength) + "s | %-" + str(config.LastOnlineLength) + "s | %-" + str(config.LocalIPLength) + "s | %-" + str(config.PublicIPLength) + "s | %s "
