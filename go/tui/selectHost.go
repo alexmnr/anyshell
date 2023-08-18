@@ -298,8 +298,18 @@ func (m selectHostModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       }
     }
   }
-  m.selectedHost = m.shownHosts[m.serverIndex][m.hostIndex]
-  m.selectedConnection = m.shownServers[m.serverIndex]
+  if len(m.shownHosts) != 0 {
+    m.selectedHost = m.shownHosts[m.serverIndex][m.hostIndex]
+    m.error = false
+  } else {
+    m.error = true
+  }
+  if len(m.shownServers) != 0 {
+    m.selectedConnection = m.shownServers[m.serverIndex]
+    m.error = false
+  } else {
+    m.error = true
+  }
   return m, cmd
 }
 
