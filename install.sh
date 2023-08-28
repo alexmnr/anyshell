@@ -83,7 +83,6 @@ if [ "$go" = "false" ]; then
 fi
 
 echo "INFO: All dependencies were met!"
-exit
 
 # move current dir to /opt/anyshell
 echo "INFO: Installing anyshell in /opt/anyshell..."
