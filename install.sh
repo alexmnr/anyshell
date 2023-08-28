@@ -68,6 +68,7 @@ if [ "$go" = "false" ]; then
   elif [ "$arc" = "aarch64" ]; then
     sudo rm -rf /usr/local/go &> /dev/null
     cd /tmp
+    link="https://go.dev/dl/go$version.linux-armv6l.tar.gz"
     wget $link
     sudo tar -C /usr/local -xzf go$version.linux-armv6l.tar.gz
     sudo rm -f /usr/bin/go
