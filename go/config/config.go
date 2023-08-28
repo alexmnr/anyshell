@@ -2,14 +2,15 @@ package config
 
 import (
 	"command"
+	"out"
 	"tools"
-  "out"
-  "tui"
-  "types"
+	"tui"
+	"types"
 
-  "os"
-  "strings"
-  "fmt"
+	"fmt"
+	"os"
+	"strings"
+
 	"gopkg.in/yaml.v2"
 )
 

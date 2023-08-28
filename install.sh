@@ -1,6 +1,6 @@
 #!/bin/bash
-#
 # check if dependencies are met
+version="1.21.0"
 dep=true
 missing=""
 if ! command -v git &> /dev/null; then
@@ -14,6 +14,10 @@ fi
 if ! command -v curl &> /dev/null; then
   dep=false
   missing=$(echo "curl $missing")
+fi
+if ! command -v netstat &> /dev/null; then
+  dep=false
+  missing=$(echo "net-tools $missing")
 fi
 if ! command -v sudo &> /dev/null; then
   dep=false
@@ -54,8 +58,9 @@ if [ "$go" = "false" ]; then
   if [ "$arc" = "x86_64" ]; then
     sudo rm -rf /usr/local/go &> /dev/null
     cd /tmp
-    wget https://go.dev/dl/go1.20.6.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.20.6.linux-amd64.tar.gz
+    link="https://go.dev/dl/go$version.linux-amd64.tar.gz"
+    wget $link
+    sudo tar -C /usr/local -xzf go$version.linux-amd64.tar.gz
     sudo rm -f /usr/bin/go
     sudo rm -f /usr/bin/gofmt
     sudo ln -s /usr/local/go/bin/go /usr/bin
@@ -63,8 +68,8 @@ if [ "$go" = "false" ]; then
   elif [ "$arc" = "aarch64" ]; then
     sudo rm -rf /usr/local/go &> /dev/null
     cd /tmp
-    wget https://go.dev/dl/go1.20.6.linux-armv6l.tar.gz
-    sudo tar -C /usr/local -xzf go1.20.6.linux-armv6l.tar.gz
+    wget $link
+    sudo tar -C /usr/local -xzf go$version.linux-armv6l.tar.gz
     sudo rm -f /usr/bin/go
     sudo rm -f /usr/bin/gofmt
     sudo ln -s /usr/local/go/bin/go /usr/bin
@@ -77,6 +82,7 @@ if [ "$go" = "false" ]; then
 fi
 
 echo "INFO: All dependencies were met!"
+exit
 
 # move current dir to /opt/anyshell
 echo "INFO: Installing anyshell in /opt/anyshell..."

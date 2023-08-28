@@ -7,7 +7,7 @@ import (
 
 var Color [6]string = [6] string {
   "#FA4453",
-  "#6EFA73",
+  "#4EF465",
   "#FFAE03",
   "#FF0F80",
   "#04D1F1",
@@ -25,10 +25,16 @@ func Style(input string, style int, bold bool) string {
 func Error(error interface{}) {
   string := fmt.Sprint(error)
   fmt.Println(Style("Error: ", 0, true) + string)
+  // fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(Color[0])).SetString("❌").Render() + " " + string)
 }
 func Info(info interface{}) {
   string := fmt.Sprint(info)
   fmt.Println(Style("Info: ", 1, true) + string)
+}
+func Checkmark(info interface{}) {
+  string := fmt.Sprint(info)
+  // fmt.Println(Style("Info: ", 1, true) + string)
+  fmt.Println(lipgloss.NewStyle().Foreground(lipgloss.Color(Color[1])).SetString("✓").Render() + " " + string)
 }
 func Warning(info interface{}) {
   string := fmt.Sprint(info)

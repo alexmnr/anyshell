@@ -81,7 +81,7 @@ func (m timerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "esc", "q":
       m.done = true
 			return m, tea.Quit
-		case " ":
+		case " ", "r":
       m.count = -0.0
 			return m, nil
 		}
@@ -113,7 +113,8 @@ func (m timerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m timerModel) View() string {
-  counter := fmt.Sprintf("%f/%d", m.count, m.duration)
+  counter := fmt.Sprintf("%.2f/%d", m.count, m.duration)
+// fmt.Sprintf("%.2f", 12.3456)
 
 	prog := m.progress.View()
 

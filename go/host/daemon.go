@@ -18,7 +18,6 @@ import (
 var sfunc func() error
 
 func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
-  out.Info(config)
   defer wg.Done()
   conn := db.Connect(config.Server)
   var hosting bool
@@ -37,9 +36,7 @@ func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
     if service == false {tui.RunAction(out.Style("Updating Database", 5, false), sfunc, false)} else {fmt.Println(out.Style("Updating Database", 5, false)); sfunc()}
 
     // check for requests
-    // query := fmt.Sprintf("SELECT requests.ID, hosts.ID, hosts.Port FROM requests, hosts WHERE requests.`HostID`=hosts.ID AND hosts.Name='%s' AND hosts.User='%s' AND hosts.Port='%s';", config.Name, config.User, fmt.Sprint(config.Port))
     query := fmt.Sprintf("SELECT 1 FROM requests WHERE HostID=%d;", config.ID)
-    // rows, err := conn.Query(query)
     queryErr := conn.QueryRow(query).Scan()
     if queryErr != sql.ErrNoRows {
       if hosting == false {
@@ -108,7 +105,7 @@ func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
       }
     }
 
-    time.Sleep(1 * time.Second)
+    time.Sleep(2 * time.Second)
   }
 }
 

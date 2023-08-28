@@ -5,7 +5,7 @@ import (
 	"out"
 	"server"
 	"strconv"
-	"time"
+	// "time"
 	"tui"
 	"types"
 
@@ -70,8 +70,8 @@ func Menu (clientConfig types.ClientConfig) {
       wg.Add(1)
       go Daemon(hostConfig, service, &wg)
     }
-    for {time.Sleep(5 * time.Second)}
-    // wg.Wait()
+    // for {time.Sleep(5 * time.Second)}
+    wg.Wait()
   // Exit
   } else {
     out.Info("Bye!")

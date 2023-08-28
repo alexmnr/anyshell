@@ -12,7 +12,9 @@ import (
 
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 var message string
 var options []string
@@ -28,13 +30,6 @@ func main() {
     clientConfig = config.GetClientConfig()
   }
   verbose = false
-
-  // quitCh := make(chan bool)
-  // tui.Timer(10, quitCh)
-  // quitCh := make(chan bool)
-  // finished := tui.Timer(10, quitCh)
-  // out.Info(finished)
-  // os.Exit(0)
 
   //////// Arguments ///////
   args := os.Args
@@ -67,8 +62,8 @@ func main() {
   if check == false {
     options = append(options, out.Style("Client", 4, false) + " configuration")
   } else {
-    options = append(options, out.Style("Connect", 1, false) + " to host")
-    options = append(options, out.Style("List", 2, false) + " hosts")
+    options = append(options, out.Style("Connect", 1, false))
+    options = append(options, out.Style("List", 2, false))
     options = append(options, out.Style("Host", 4, false) + " configuration")
     options = append(options, out.Style("Client", 5, false) + " configuration")
   }
@@ -114,3 +109,14 @@ func main() {
     config.Menu()
   }
 }
+
+// handle ctrl-c
+func init() {
+    c := make(chan os.Signal)
+    signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+    go func() {
+        <-c
+        os.Exit(1)
+    }()
+}
+

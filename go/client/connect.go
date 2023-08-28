@@ -1,16 +1,19 @@
 package client
 
 import (
+	"command"
 	"db"
 	"out"
+	// "ssh"
 	"tui"
 	"types"
 
-	// "time"
-  "database/sql"
+	"time"
+	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func Connect(clientConfig types.ClientConfig) {
@@ -20,20 +23,52 @@ func Connect(clientConfig types.ClientConfig) {
   }
   requestId := Request(hostInfo, connectionInfo)
   // starting keep alive
+  errCh := make(chan error)
   quitCh := make(chan bool)
+  doneCh := make(chan bool)
   go RequestKeepAlive(requestId, connectionInfo, quitCh)
   // show timer and wait for connection
-  go WaitForConnection(hostInfo.ID, connectionInfo, quitCh)
-  ret := tui.Timer(5, quitCh)
+  go WaitForConnection(hostInfo.ID, connectionInfo, doneCh)
+  ret := tui.Timer(5, doneCh)
   if ret == true {
     out.Error("Could not connect to Host!")
     os.Exit(0)
   }
-  out.Info("Host responded to request!")
-  // get serverport
+  out.Checkmark("Host " + out.Style("accepted", 1, false) + " request!")
+  // creating tunnel
   serverPort := getServerPort(hostInfo.ID, connectionInfo)
-  _ = serverPort
-  // out.Info(connectionInfo)
+  localPort := GetFreeLocalPort(50000)
+  tunnelConfig := types.ForwardTunnelConfig{
+    ConnectionInfo: connectionInfo,
+    LocalPort: localPort,
+    RemotePort: serverPort,
+  }
+  _ = errCh
+  _ = tunnelConfig
+  for {
+    out.Info("running")
+    time.Sleep(1 * time.Second)
+  }
+  // go ssh.CreateTunnel(tunnelConfig, errCh, quitCh)
+  // err := <-errCh
+  // out.Info(err)
+  // err = <-errCh
+  // out.Info(err)
+  // sfunc := func() error {
+  //   tunnelConfig := types.ForwardTunnelConfig{
+  //     ConnectionInfo: connectionInfo,
+  //     LocalPort: localPort,
+  //     RemotePort: serverPort,
+  //   }
+  //   go ssh.CreateTunnel(tunnelConfig, errCh, quitCh)
+  //   err := <-errCh
+  //   if err != nil {
+  //     out.Error(err)
+  //     return err
+  //   }
+  //   return nil
+  // }
+  // tui.RunAction(out.Style("Creating", 4, false) + " ssh tunnel from local port " + fmt.Sprint(localPort) + " to remote port " + fmt.Sprint(serverPort), sfunc, false)
   _ = onlyTunnel
 }
 
@@ -160,4 +195,25 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
   }
   hostInfo = hosts[hostIndex]
   return true, hostInfo, connectionInfo, onlyTunnel
+}
+
+
+func GetFreeLocalPort(start int) int {
+  port := start
+  err, output, _ := command.Cmd("netstat -tunlp", false)
+  if err != nil {
+    out.Error("Could not get free local port")
+    return 0
+  } else {
+    if strings.Contains(output, ":" + fmt.Sprint(port)) == false {
+      return port
+    } else {
+      port++
+    }
+    if port >= start + 1000 {
+      out.Error("Could not get free local port")
+      return 0
+    }
+  }
+  return port
 }
