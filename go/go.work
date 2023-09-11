@@ -9,7 +9,7 @@ use (
 	./host
 	./out
 	./server
-	./ssh
+	./libssh
 	./tools
 	./tui
 	./types

@@ -2,6 +2,9 @@ package config
 
 import (
 	"command"
+	"db"
+	"errors"
+	"libssh"
 	"out"
 	"tools"
 	"tui"
@@ -11,9 +14,13 @@ import (
 	"os"
 	"strings"
 
+	"database/sql"
+
+	_ "github.com/go-sql-driver/mysql"
 	"gopkg.in/yaml.v2"
 )
 
+var sfunc func() error
 var message string
 var options []string
 var ret string
@@ -72,6 +79,7 @@ func CreateClientConfig() {
 
   var connectionConfigs []types.ConnectionInfo
   connectionConfig := tui.GetConnectionInfo()
+  CheckServer(connectionConfig)
   connectionConfigs = append(connectionConfigs, connectionConfig)
 
   clientConfig := types.ClientConfig{
@@ -95,6 +103,7 @@ func AddConnectionConfig() {
 
   clientConfig := GetClientConfig()
   connectionConfig := tui.GetConnectionInfo()
+  CheckServer(connectionConfig)
   clientConfig.ConnectionConfigs = append(clientConfig.ConnectionConfigs, connectionConfig)
 
   yamlData, err := yaml.Marshal(&clientConfig)
@@ -119,4 +128,53 @@ func GetClientConfig() types.ClientConfig {
     os.Exit(1)
   }
   return clientConfig
+}
+
+func CheckServer(connectionInfo types.ConnectionInfo) {
+  sfunc = func() error {
+    check := CheckDB(connectionInfo)
+    if check == false {
+      return errors.New(":(")
+    } else {
+      return nil
+    }
+  }
+  tui.RunAction(out.Style("Checking", 1, false) + " database", sfunc, false)
+
+  sfunc = func() error {
+    check := CheckSSH(connectionInfo)
+    if check == false {
+      return errors.New(":(")
+    } else {
+      return nil
+    }
+  }
+  tui.RunAction(out.Style("Checking", 1, false) + " ssh-server", sfunc, false)
+}
+
+func CheckDB(connection types.ConnectionInfo) bool {
+  // checking db of connection
+  connString := connection.Name  + ":" + connection.Password + "@tcp(" + connection.Host + ":" + connection.DbPort + ")/" + connection.Name 
+  conn, err := sql.Open("mysql", connString)
+	defer conn.Close()
+  if err != nil {
+    db.ConnectError(fmt.Sprint(err), connection)
+    return false
+  }
+  err = conn.Ping()
+  if err != nil {
+    db.ConnectError(fmt.Sprint(err), connection)
+    return false
+  }
+  return true
+}
+
+func CheckSSH(connection types.ConnectionInfo) bool {
+  // checking ssh of connection
+  err, _ := libssh.CommandInSSH(connection, "netstat -tunlp")
+  if err != nil {
+    out.Error("Could not connect to ssh-server!")
+    return false
+  }
+  return true
 }

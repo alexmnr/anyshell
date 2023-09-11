@@ -1,4 +1,4 @@
-package ssh
+package libssh
 
 import (
 	"out"
@@ -8,8 +8,12 @@ import (
 	"bytes"
 	"fmt"
 
-	libssh "golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh"
 )
+
+func endpointString(host string, port string) string {
+  return fmt.Sprintf("%s:%s", host, port)
+}
 
 func GetFreeRemotePort(connectionInfo types.ConnectionInfo, start int) int {
   port := start
@@ -33,16 +37,16 @@ func GetFreeRemotePort(connectionInfo types.ConnectionInfo, start int) int {
 }
 
 func CommandInSSH(connectionInfo types.ConnectionInfo, command string) (error, string) {
-  sshConfig := &libssh.ClientConfig{
+  sshConfig := &ssh.ClientConfig{
     User: connectionInfo.Name,
-    Auth: []libssh.AuthMethod{
-      libssh.Password(connectionInfo.Password),
+    Auth: []ssh.AuthMethod{
+      ssh.Password(connectionInfo.Password),
     },
-    HostKeyCallback: libssh.InsecureIgnoreHostKey(),
+    HostKeyCallback: ssh.InsecureIgnoreHostKey(),
   }
 
   // Connect to SSH remote server using serverEndpoint
-  serverConn, err := libssh.Dial("tcp", endpointString(connectionInfo.Host, connectionInfo.SshPort), sshConfig)
+  serverConn, err := ssh.Dial("tcp", endpointString(connectionInfo.Host, connectionInfo.SshPort), sshConfig)
   if err != nil {
     out.Error("Dial INTO remote server error: " + fmt.Sprint(err))
     return err, ""

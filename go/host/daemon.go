@@ -4,7 +4,7 @@ import (
 	"command"
 	"db"
 	"out"
-	"ssh"
+	"libssh"
 	"tui"
 	"types"
 
@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"time"
   "sync"
+  "strconv"
 )
 
 var sfunc func() error
@@ -24,7 +25,7 @@ func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
   var remotePort int
   var connectionID int
   hosting = false
-  errorCh := make(chan error)
+  errorCh := make(chan error, 100)
   quitCh := make(chan bool)
   // check if ssh start stop is activated
   for {
@@ -45,19 +46,31 @@ func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
         checkSSHServer(service)
         // create reverse tunnel
         sfunc = func() error {
-          localPort := GetSSHPort()
-          remotePort = ssh.GetFreeRemotePort(config.Server, 50000)        
+          // localPort := GetSSHPort()
+          remotePort = libssh.GetFreeRemotePort(config.Server, 50000)        
+          sshPort, _ := strconv.Atoi(config.Server.SshPort)
           reverseTunnelConfig := types.ReverseTunnelConfig{
-            ConnectionInfo: config.Server,
-            LocalPort: localPort,
+            User: config.Server.Name,
+            Host: config.Server.Host,
+            ServerPort: sshPort,
+            Password: config.Server.Password,
+            LocalPort: config.Port,
             RemotePort: remotePort,
           }
-          go ssh.CreateReverseTunnel(reverseTunnelConfig, errorCh, quitCh)
-          // waiting for tunnel to be created
-          msg := <-errorCh
-          return msg
+          go libssh.CreateReverseTunnel(reverseTunnelConfig, errorCh, quitCh)
+          test := <- errorCh
+          if test != nil {
+            hosting = false
+          } else {
+            hosting = true
+          }
+          return test
         }
         if service == false {tui.RunAction(out.Style("Creating", 1, false) + " reverse tunnel", sfunc, false)} else {fmt.Println(out.Style("Creating", 1, false) + " reverse tunnel"); sfunc()}
+        if hosting == false {
+          out.Error("Could not create reverse tunnel!")
+          continue
+        }
         // create connection entry
         sfunc = func() error {
           connectionID = db.GetID(conn, "connections")

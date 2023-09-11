@@ -29,7 +29,7 @@ func Connect(clientConfig types.ClientConfig) {
   go RequestKeepAlive(requestId, connectionInfo, quitCh)
   // show timer and wait for connection
   go WaitForConnection(hostInfo.ID, connectionInfo, doneCh)
-  ret := tui.Timer(5, doneCh)
+  ret := tui.Timer(10, doneCh)
   if ret == true {
     out.Error("Could not connect to Host!")
     os.Exit(0)

@@ -1,4 +1,4 @@
-package ssh
+package libssh
 
 import (
   "types"
