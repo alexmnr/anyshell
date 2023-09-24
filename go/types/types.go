@@ -65,7 +65,10 @@ type ReverseTunnelConfig struct {
 }
 
 type ForwardTunnelConfig struct {
-  ConnectionInfo ConnectionInfo
+  Host string
+  User string
+  Password string
+  ServerPort int
   LocalPort int
   RemotePort int
 }

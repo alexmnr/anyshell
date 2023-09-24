@@ -3,17 +3,19 @@ package client
 import (
 	"command"
 	"db"
+	"libssh"
 	"out"
+
 	// "ssh"
 	"tui"
 	"types"
 
-	"time"
 	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func Connect(clientConfig types.ClientConfig) {
@@ -23,7 +25,7 @@ func Connect(clientConfig types.ClientConfig) {
   }
   requestId := Request(hostInfo, connectionInfo)
   // starting keep alive
-  errCh := make(chan error)
+  errorCh := make(chan error)
   quitCh := make(chan bool)
   doneCh := make(chan bool)
   go RequestKeepAlive(requestId, connectionInfo, quitCh)
@@ -35,44 +37,37 @@ func Connect(clientConfig types.ClientConfig) {
     os.Exit(0)
   }
   out.Checkmark("Host " + out.Style("accepted", 1, false) + " request!")
-  // creating tunnel
-  serverPort := getServerPort(hostInfo.ID, connectionInfo)
+  remotePort := getRemotePort(hostInfo.ID, connectionInfo)
   localPort := GetFreeLocalPort(50000)
-  tunnelConfig := types.ForwardTunnelConfig{
-    ConnectionInfo: connectionInfo,
-    LocalPort: localPort,
-    RemotePort: serverPort,
+  serverPort, _ := strconv.Atoi(connectionInfo.SshPort)
+  // creating tunnel
+  sfunc := func() error {
+    tunnelConfig := types.ForwardTunnelConfig{
+      Host: connectionInfo.Host,
+      User: connectionInfo.Name,
+      Password: connectionInfo.Password,
+      ServerPort: serverPort,
+      LocalPort: localPort,
+      RemotePort: remotePort,
+    }
+    go libssh.CreateForwardTunnel(tunnelConfig, errorCh, quitCh)
+    test := <- errorCh
+    if test != nil {
+      out.Warning("Could not create forward tunnel! ")
+      out.Error(test)
+      return test
+    }
+    return nil
   }
-  _ = errCh
-  _ = tunnelConfig
+  tui.RunAction(out.Style("Creating", 4, false) + " ssh tunnel from local port " + fmt.Sprint(localPort) + " to remote port " + fmt.Sprint(serverPort), sfunc, false)
+  _ = onlyTunnel
   for {
     out.Info("running")
     time.Sleep(1 * time.Second)
   }
-  // go ssh.CreateTunnel(tunnelConfig, errCh, quitCh)
-  // err := <-errCh
-  // out.Info(err)
-  // err = <-errCh
-  // out.Info(err)
-  // sfunc := func() error {
-  //   tunnelConfig := types.ForwardTunnelConfig{
-  //     ConnectionInfo: connectionInfo,
-  //     LocalPort: localPort,
-  //     RemotePort: serverPort,
-  //   }
-  //   go ssh.CreateTunnel(tunnelConfig, errCh, quitCh)
-  //   err := <-errCh
-  //   if err != nil {
-  //     out.Error(err)
-  //     return err
-  //   }
-  //   return nil
-  // }
-  // tui.RunAction(out.Style("Creating", 4, false) + " ssh tunnel from local port " + fmt.Sprint(localPort) + " to remote port " + fmt.Sprint(serverPort), sfunc, false)
-  _ = onlyTunnel
 }
 
-func getServerPort(hostID int, server types.ConnectionInfo) int {
+func getRemotePort(hostID int, server types.ConnectionInfo) int {
   conn := db.Connect(server)
   var serverPort int
   query := fmt.Sprintf("SELECT ServerPort FROM connections WHERE HostID=%d;", hostID)
