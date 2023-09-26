@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
-  "golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -249,7 +248,8 @@ func FillDockerCompose(serverInfo types.ServerInfo) {
 }
 
 func AddSSHUser(username string, password string) {
-  crypt, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
-  exec := "useradd -m -p '" + string(crypt) + "' " + username
-  command.SmartCmd("docker exec anyshell-ssh " + exec)
+  exec := "useradd -m " + username
+  command.SmartCmd("docker exec anyshell-ssh bash -c '" + exec + "'")
+  exec = "echo -e \"" + password + "\\n" + password + "\" | passwd " + username
+  command.SmartCmd("docker exec anyshell-ssh bash -c '" + exec + "'")
 }
