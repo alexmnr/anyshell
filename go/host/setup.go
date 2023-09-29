@@ -28,7 +28,7 @@ func Setup(server types.ConnectionInfo) {
     // if tools.CommandExists("tmux") == false {
     //   missing += "tmux"
     // }
-    if tools.CommandExists("/usr/bin/sshd") == false {
+    if tools.CommandExists("/usr/bin/sshd") == false && tools.CommandExists("/usr/sbin/sshd") == false {
       missing += "openssh-server"
     }
 
