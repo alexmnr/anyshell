@@ -41,10 +41,10 @@ func CreateForwardTunnel(config types.ForwardTunnelConfig, ch chan error, quit c
   for {
     localConn, err := listener.Accept()
     if err != nil {
-      out.Warning("Stopped forward tunnel")
+      // out.Warning("Stopped forward tunnel")
       break
     }
-    out.Info("Accepted client")
+    // out.Info("Accepted client")
     // tunnel.logf("accepted connection")
     remoteConn, err := serverConn.Dial("tcp", endpointString("localhost", fmt.Sprint(config.RemotePort)))
     if err != nil {
