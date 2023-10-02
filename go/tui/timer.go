@@ -54,7 +54,8 @@ type timerModel struct {
 
 func newTimerModel(duration int) timerModel {
 	p := progress.New(
-		progress.WithScaledGradient("#6EFA73", "#FF0F80"),
+		// progress.WithScaledGradient("#6EFA73", "#FF0F80"),
+		progress.WithScaledGradient("#2fcdbb", "#ff00e4"),
 		progress.WithWidth(80),
 		progress.WithoutPercentage(),
 	)

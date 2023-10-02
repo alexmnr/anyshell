@@ -2,12 +2,16 @@ package client
 
 import (
   "types"
+  "tui"
 
   "fmt"
   "github.com/charmbracelet/lipgloss"
 )
 
 
+func List(clientConfig types.ClientConfig) {
+  tui.SelectHost(clientConfig)
+}
 
 func GetHostInfoConfig(hosts []types.HostInfo, verbose bool) types.HostInfoConfig {
   config := types.HostInfoConfig{
