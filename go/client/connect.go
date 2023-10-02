@@ -15,7 +15,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func Connect(clientConfig types.ClientConfig) {
@@ -26,9 +25,10 @@ func Connect(clientConfig types.ClientConfig) {
   requestId := Request(hostInfo, connectionInfo)
   // starting keep alive
   errorCh := make(chan error)
-  quitCh := make(chan bool)
+  requestQuitCh := make(chan bool)
+  tunnelQuitCh := make(chan bool)
   doneCh := make(chan bool)
-  go RequestKeepAlive(requestId, connectionInfo, quitCh)
+  go RequestKeepAlive(requestId, connectionInfo, requestQuitCh)
   // show timer and wait for connection
   go WaitForConnection(hostInfo.ID, connectionInfo, doneCh)
   ret := tui.Timer(10, doneCh)
@@ -50,7 +50,7 @@ func Connect(clientConfig types.ClientConfig) {
       LocalPort: localPort,
       RemotePort: remotePort,
     }
-    go libssh.CreateForwardTunnel(tunnelConfig, errorCh, quitCh)
+    go libssh.CreateForwardTunnel(tunnelConfig, errorCh, tunnelQuitCh)
     test := <- errorCh
     if test != nil {
       out.Warning("Could not create forward tunnel! ")
@@ -60,11 +60,18 @@ func Connect(clientConfig types.ClientConfig) {
     return nil
   }
   tui.RunAction(out.Style("Creating", 4, false) + " ssh tunnel from local port " + fmt.Sprint(localPort) + " to remote port " + fmt.Sprint(serverPort), sfunc, false)
-  _ = onlyTunnel
-  for {
-    out.Info("running")
-    time.Sleep(1 * time.Second)
+  if onlyTunnel == true {
+    out.Info("Created Tunnel on LocalPort: " +  fmt.Sprint(localPort))
+    for {
+
+    }
+  } else {
+    // connect ssh locally
+    command.Cmd("ssh " + hostInfo.User + "@localhost -p " + fmt.Sprint(localPort), true)
   }
+  tunnelQuitCh <- true
+  requestQuitCh <- true
+  DeleteRequest(requestId, connectionInfo)
 }
 
 func getRemotePort(hostID int, server types.ConnectionInfo) int {
@@ -114,6 +121,21 @@ func Request(hostInfo types.HostInfo, server types.ConnectionInfo) int {
 
   conn.Close()
   return requestId
+}
+
+func DeleteRequest(id int, server types.ConnectionInfo) {
+  conn := db.Connect(server)
+  // Stop reverse tunnel
+  var query string
+  sfunc := func() error {
+    query = fmt.Sprintf("DELETE FROM requests WHERE `ID`='%d';", id)
+    _, err := conn.Exec(query)
+    if err != nil {
+      db.QueryError(query, fmt.Sprint(err))
+    }
+    return nil
+  }
+  tui.RunAction(out.Style("Deleting", 0, false) + " request with ID: " + fmt.Sprint(id), sfunc, false) 
 }
 
 func RequestKeepAlive(id int, server types.ConnectionInfo, quit chan bool) {
