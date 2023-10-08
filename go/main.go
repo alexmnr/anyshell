@@ -3,14 +3,12 @@ package main
 import (
 	"client"
 	"config"
-	"db"
 	"host"
 	"out"
 	"server"
 	"tui"
 	"types"
 
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -81,19 +79,7 @@ func main() {
     os.Exit(0)
   // list
   } else if strings.Contains(ret, "List") {
-    for n, connection := range clientConfig.ConnectionConfigs {
-      conn := db.Connect(connection)
-      hosts := db.GetHosts(conn)
-      hostInfoConfig := client.GetHostInfoConfig(hosts, verbose)
-      if n > 0 {
-        fmt.Println()
-      } else {
-        fmt.Println(client.GetHostInfoDescription(hostInfoConfig))
-      }
-      for _, host := range hosts {
-        fmt.Println(client.GetHostInfoString(host, hostInfoConfig))
-      }
-    }
+    client.List(clientConfig)
   // connect
   } else if strings.Contains(ret, "Connect") {
     client.Connect(clientConfig)
