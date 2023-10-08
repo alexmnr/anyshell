@@ -44,6 +44,9 @@ if [ "$go" = "false" ]; then
   if [ ! -z "$(lscpu | grep 'aarch64')" ]; then
     arc="aarch64"
     echo "INFO: Detected aarch64 architecture"
+  elif [ ! -z "$(lscpu | grep 'armv6l')" ]; then
+    arc="armv7l"
+    echo "INFO: Detected armv6l architecture"
   elif [ ! -z "$(lscpu | grep 'armv7l')" ]; then
     arc="armv7l"
     echo "INFO: Detected armv7l architecture"
