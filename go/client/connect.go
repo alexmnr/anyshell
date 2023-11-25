@@ -3,6 +3,7 @@ package client
 import (
 	"command"
 	"db"
+	"host"
 	"libssh"
 	"out"
 
@@ -18,9 +19,20 @@ import (
 )
 
 func Connect(clientConfig types.ClientConfig) {
-  check, hostInfo, connectionInfo, onlyTunnel := CheckArgs(clientConfig)
+  check, hostInfo, connectionInfo, onlyTunnel, forceLocal := CheckArgs(clientConfig)
   if check == false {
-    hostInfo, connectionInfo, onlyTunnel = tui.SelectHost(clientConfig)
+    hostInfo, connectionInfo, onlyTunnel, forceLocal = tui.SelectHost(clientConfig)
+  }
+  // if client is on same network
+  if hostInfo.PublicIP == host.GetPublicIP() {
+    out.Info("Host is on same network, connecting locally...")
+    command.Cmd("ssh -o ConnectTimeout=5 " + hostInfo.User + "@" + hostInfo.LocalIP + " -p " + fmt.Sprint(hostInfo.Port), true)
+    return
+  // if connection is forced local
+  } else if forceLocal == true {
+    out.Info("Forcing local connect!")
+    command.Cmd("ssh -o ConnectTimeout=5 " + hostInfo.User + "@" + hostInfo.LocalIP + " -p " + fmt.Sprint(hostInfo.Port), true)
+    return
   }
   requestId := Request(hostInfo, connectionInfo)
   // starting keep alive
@@ -37,6 +49,7 @@ func Connect(clientConfig types.ClientConfig) {
     os.Exit(0)
   }
   out.Checkmark("Host " + out.Style("accepted", 1, false) + " request!")
+  // if not get tunnel info
   remotePort := getRemotePort(hostInfo.ID, connectionInfo)
   localPort := GetFreeLocalPort(50000)
   serverPort, _ := strconv.Atoi(connectionInfo.SshPort)
@@ -156,7 +169,7 @@ func RequestKeepAlive(id int, server types.ConnectionInfo, quit chan bool) {
   }
 }
 
-func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.ConnectionInfo, bool) {
+func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.ConnectionInfo, bool, bool) {
   args := os.Args
   // hostIndex := 0
   serverIndex := -1
@@ -164,11 +177,15 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
   var hostInfo types.HostInfo
   var connectionInfo types.ConnectionInfo
   onlyTunnel := false
+  forceLocal := false
 
   skip := false
   for n, arg := range args {
     if arg == "-t" {
       onlyTunnel = true
+    }
+    if arg == "-l" {
+      forceLocal = true
     }
     if arg == "-s" {
       if len(args) - 1 <= n {
@@ -193,7 +210,7 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
   }
 
   if hostIndex == -1 {
-    return false, hostInfo, connectionInfo, false
+    return false, hostInfo, connectionInfo, onlyTunnel, forceLocal
   } else {
     if serverIndex == -1 {
       serverIndex = 0
@@ -211,7 +228,7 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
     os.Exit(0)
   }
   hostInfo = hosts[hostIndex]
-  return true, hostInfo, connectionInfo, onlyTunnel
+  return true, hostInfo, connectionInfo, onlyTunnel, forceLocal
 }
 
 

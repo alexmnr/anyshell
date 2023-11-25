@@ -69,6 +69,7 @@ var (
   filterText = "(/) filter"
   idFilterText = "(0-9) ID filter"
   tunnelText = "(t) Only tunnel"
+  forceLocalText = "(l) Force local"
   verboseText = "(v) verbose Mode"
   onlyOnlineText = "(o) only online"
 )
@@ -89,6 +90,7 @@ type selectHostModel struct {
   verbose bool
   tunnel bool
   onlyOnline bool
+  forceLocal bool
 
   error bool
   width int
@@ -106,6 +108,7 @@ func (m selectHostModel) Init() tea.Cmd {
   m.filtering = false
   m.verbose = false
   m.onlyOnline = false
+  m.forceLocal = false
   m.tunnel = false
   m.hostIndex = 0
   m.serverIndex = 0
@@ -199,6 +202,8 @@ func (m selectHostModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       if m.verbose == true {m.verbose = false} else {m.verbose=true}
     case "t":
       if m.tunnel == true {m.tunnel = false} else {m.tunnel=true}
+    case "l":
+      if m.forceLocal == true {m.forceLocal = false} else {m.forceLocal=true}
     case "o":
       if m.onlyOnline == true {m.onlyOnline = false} else {m.onlyOnline=true}
       m.hostIndex = 0
@@ -349,13 +354,18 @@ func (m selectHostModel) View() string {
   }
 
   // menu
-  columnWidth := (m.width - 1) / 5
+  columnWidth := (m.width - 1) / 6
   var menu string
 
   if m.tunnel == false {
     menu += inactiveStyle.Width(columnWidth).BorderRight(true).Render(tunnelText)
   } else {
     menu += activeStyle.Width(columnWidth).BorderRight(true).Render(tunnelText)
+  }
+  if m.forceLocal == false {
+    menu += inactiveStyle.Width(columnWidth).BorderRight(true).Render(forceLocalText)
+  } else {
+    menu += activeStyle.Width(columnWidth).BorderRight(true).Render(forceLocalText)
   }
   if m.verbose == false {
     menu += inactiveStyle.Width(columnWidth).BorderRight(true).Render(verboseText)
@@ -380,7 +390,7 @@ func (m selectHostModel) View() string {
   return header + "\n" + list + lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder()).BorderTop(true).BorderForeground(lipgloss.Color(color[0])).Render(menu)
 }
 
-func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.ConnectionInfo, bool) {
+func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.ConnectionInfo, bool, bool) {
   var hosts [][]types.HostInfo
   var servers []types.ConnectionInfo
   for _, config := range clientConfig.ConnectionConfigs {
@@ -410,7 +420,7 @@ func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.Connecti
 		out.Error("You need to select something!")
     os.Exit(0)
   }
-  return mm.selectedHost, mm.selectedConnection, mm.tunnel
+  return mm.selectedHost, mm.selectedConnection, mm.tunnel, mm.forceLocal
 }
 
 func getString(host types.HostInfo, config types.HostInfoConfig) string {
