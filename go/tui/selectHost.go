@@ -35,7 +35,7 @@ var (
     Foreground(lipgloss.Color(color[0])).
     BorderStyle(lipgloss.NormalBorder()).
     BorderForeground(lipgloss.Color(color[0])).
-    BorderBottom(true).
+    BorderBottom(false).
     Align(lipgloss.Center).
     Bold(true)
 
@@ -46,8 +46,6 @@ var (
     BorderTop(false).
     BorderForeground(lipgloss.Color(color[4])).
     Align(lipgloss.Left)
-
-    // BorderForeground(lipgloss.Color(color[2]))
 
   inactiveStyle = lipgloss.NewStyle().
     Foreground(lipgloss.Color(color[0])).
@@ -409,6 +407,7 @@ func SelectHost(clientConfig types.ClientConfig) (types.HostInfo, types.Connecti
 	m := selectHostModel{
     hosts: hosts,
     servers: servers,
+    verbose: clientConfig.Verbose,
   }
   tm, err := tea.NewProgram(m).Run();
 	if err != nil {

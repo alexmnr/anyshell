@@ -53,6 +53,7 @@ type ConnectionInfo struct {
 type ClientConfig struct {
   ConnectionConfigs []ConnectionInfo
   HostConfigs []HostConfig
+  Verbose bool
 }
 
 type ReverseTunnelConfig struct {
