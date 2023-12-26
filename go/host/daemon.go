@@ -30,11 +30,13 @@ func Daemon(config types.HostConfig, service bool, wg *sync.WaitGroup) {
   // check if ssh start stop is activated
   for {
     // update online status
-    sfunc = func() error {
-      UpdateHost(config, conn)
-      return nil
-    }
-    if service == false {tui.RunAction(out.Style("Updating Database", 5, false), sfunc, false)} else {fmt.Println(out.Style("Updating Database", 5, false)); sfunc()}
+    // sfunc = func() error {
+    //   UpdateHost(config, conn)
+    //   return nil
+    // }
+    // if service == false {tui.RunAction(out.Style("Updating Database", 5, false), sfunc, false)} else {fmt.Println(out.Style("Updating Database", 5, false)); sfunc()}
+    // if service == false {tui.RunAction(out.Style("Updating Database", 5, false), sfunc, false)} else {fmt.Println(out.Style("Updating Database", 5, false)); sfunc()}
+    UpdateHost(config, conn)
 
     // check for requests
     query := fmt.Sprintf("SELECT 1 FROM requests WHERE HostID=%d;", config.ID)

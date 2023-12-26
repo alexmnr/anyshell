@@ -111,7 +111,9 @@ func GetPublicIP() string {
 }
 
 func GetVersion() int {
-  err, output, _ := command.Cmd("git -C /opt/anyshell rev-list --count main", false);
+  // err, output, _ := command.Cmd("git -C /opt/anyshell rev-list --count main", false);
+  err, output, _ := command.Cmd("curl -s -I -k \"https://api.github.com/repos/alexmnr/anyshell/commits?per_page=1\" | sed -n '/^[Ll]ink:/ s/.*\"next\".*page=\\([0-9]*\\).*\"last\".*/\\1/p'", false);
+  out.Info(output)
   if err != nil {
     return 0
   }
