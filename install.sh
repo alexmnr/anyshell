@@ -117,9 +117,12 @@ cd /opt/anyshell/go
 go build .
 
 sudo rm -f /usr/bin/anyshell &>/dev/null
-sudo ln -s /opt/anyshell/go/anyshell /usr/bin
+sudo rm -f /usr/bin/any &>/dev/null
+sudo ln -s /opt/anyshell/go/anyshell /usr/bin/anyshell
+sudo ln -s /opt/anyshell/go/anyshell /usr/bin/any
 
 echo "INFO: Linking anyshell service..."
+sudo rm -f /etc/systemd/system/anyshell.service &>/dev/null
 sudo ln -s /opt/anyshell/etc/anyshell.service /etc/systemd/system
 
 echo "INFO: done!"
