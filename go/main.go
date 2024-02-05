@@ -43,12 +43,8 @@ func main() {
         ret = "Connect"
       } else if arg == "host" {
         ret = "Host"
-      } else if arg == "setup" {
-        ret += " setup"
-      } else if arg == "setup" {
-        ret += " setup"
-      } else if arg == "daemon" {
-        ret += " daemon"
+      } else if arg == "help" || arg == "-h" || arg == "--help" {
+        ret += " Help"
       }
     }
   } else {
@@ -66,6 +62,7 @@ func main() {
     options = append(options, out.Style("Client", 5, false) + " configuration")
   }
   options = append(options, out.Style("Server", 5, false) + " configuration")
+  options = append(options, out.Style("Help", 3, false))
   options = append(options, out.Style("Exit", 0, false))
   message = "Welcome to anyshell!"
 
@@ -86,13 +83,15 @@ func main() {
   // host
   } else if strings.Contains(ret, "Host") {
     host.Menu(clientConfig)
-    // host menu
   // Server Config 
   } else if strings.Contains(ret, "Server") {
     server.Menu()
   // Client Config 
   } else if strings.Contains(ret, "Client") {
     config.Menu()
+  // Help
+  } else if strings.Contains(ret, "Help") {
+    out.Help()
   }
 }
 
