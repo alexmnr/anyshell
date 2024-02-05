@@ -16,10 +16,6 @@ if ! command -v curl &> /dev/null; then
   dep=false
   missing=$(echo "curl $missing")
 fi
-if ! command -v netstat &> /dev/null; then
-  dep=false
-  missing=$(echo "net-tools $missing")
-fi
 if ! command -v sudo &> /dev/null; then
   dep=false
   missing=$(echo "sudo $missing")
