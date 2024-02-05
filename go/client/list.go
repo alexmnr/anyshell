@@ -10,7 +10,9 @@ import (
 
 
 func List(clientConfig types.ClientConfig) {
-  tui.SelectHost(clientConfig)
+  _, _, _, _, _, verbose := CheckArgs(clientConfig)
+  clientConfig.Verbose = verbose
+  tui.ListHost(clientConfig)
 }
 
 func GetHostInfoConfig(hosts []types.HostInfo, verbose bool) types.HostInfoConfig {

@@ -19,7 +19,8 @@ import (
 )
 
 func Connect(clientConfig types.ClientConfig) {
-  check, hostInfo, connectionInfo, onlyTunnel, forceLocal := CheckArgs(clientConfig)
+  check, hostInfo, connectionInfo, onlyTunnel, forceLocal, verbose := CheckArgs(clientConfig)
+  clientConfig.Verbose = verbose
   if check == false {
     hostInfo, connectionInfo, onlyTunnel, forceLocal = tui.SelectHost(clientConfig)
   }
@@ -169,7 +170,7 @@ func RequestKeepAlive(id int, server types.ConnectionInfo, quit chan bool) {
   }
 }
 
-func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.ConnectionInfo, bool, bool) {
+func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.ConnectionInfo, bool, bool, bool) {
   args := os.Args
   // hostIndex := 0
   serverIndex := -1
@@ -178,9 +179,13 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
   var connectionInfo types.ConnectionInfo
   onlyTunnel := false
   forceLocal := false
+  verbose := false
 
   skip := false
   for n, arg := range args {
+    if arg == "-v" {
+      verbose = true
+    }
     if arg == "-t" {
       onlyTunnel = true
     }
@@ -210,7 +215,7 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
   }
 
   if hostIndex == -1 {
-    return false, hostInfo, connectionInfo, onlyTunnel, forceLocal
+    return false, hostInfo, connectionInfo, onlyTunnel, forceLocal, verbose
   } else {
     if serverIndex == -1 {
       serverIndex = 0
@@ -228,7 +233,7 @@ func CheckArgs(config types.ClientConfig) (bool, types.HostInfo, types.Connectio
     os.Exit(0)
   }
   hostInfo = hosts[hostIndex]
-  return true, hostInfo, connectionInfo, onlyTunnel, forceLocal
+  return true, hostInfo, connectionInfo, onlyTunnel, forceLocal, verbose
 }
 
 
