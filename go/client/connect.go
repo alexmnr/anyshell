@@ -81,7 +81,7 @@ func Connect(clientConfig types.ClientConfig) {
 		}
 	} else {
 		// connect ssh locally
-		command.Cmd("ssh -o StrictHostKeyChecking=no -o LogLevel=ERROR "+hostInfo.User+"@localhost -p "+fmt.Sprint(localPort), true)
+		command.Cmd("ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=ERROR "+hostInfo.User+"@localhost -p "+fmt.Sprint(localPort), true)
 	}
 	tunnelQuitCh <- true
 	requestQuitCh <- true
