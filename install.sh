@@ -20,6 +20,10 @@ if ! command -v sudo &> /dev/null; then
   dep=false
   missing=$(echo "sudo $missing")
 fi
+if ! command -v netstat &> /dev/null; then
+  dep=false
+  missing=$(echo "net-tools $missing")
+fi
 
 if [ "$dep" = "false" ]; then
   echo "INFO: Not all dependencies were met, please install following packages: $missing"
