@@ -102,7 +102,7 @@ func GetLocalIP() string {
 }
 
 func GetPublicIP() string {
-	err, output, _ := command.Cmd("(curl -s ifconfig.me | grep -o -Eo '[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}')", false)
+	err, output, _ := command.Cmd("(curl -s ipinfo.io/ip | grep -o -Eo '[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}')", false)
 	if err != nil {
 		return "0.0.0.0"
 	}

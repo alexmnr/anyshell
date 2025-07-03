@@ -129,7 +129,6 @@ func UpdateHost(hostConfig types.HostConfig, conn *sql.DB) {
   localIP := GetLocalIP()
   publicIP := GetPublicIP()
   version := fmt.Sprint(GetVersion())
-
   query := fmt.Sprintf("UPDATE hosts SET `LastOnline`=CURRENT_TIMESTAMP, `Online`='1', `LocalIP`='%s', `PublicIP`='%s', `Version`='%s' WHERE Name='%s' AND User='%s' AND Port='%s';",
   localIP, publicIP, version, hostConfig.Name, hostConfig.User, fmt.Sprint(hostConfig.Port))
   _, err := conn.Exec(query)
